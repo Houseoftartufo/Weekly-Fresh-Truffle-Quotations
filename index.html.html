@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>House of Tartufo — Weekly Selection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Lora:ital,wght@0,400;0,600;1,400&family=Nunito:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A84C;--gold2:#E8C97A;--amber:#8B5E3C;
+  --dark:#0A0806;--dark2:#100D09;--mid:#1E1710;
+  --cream:#F5EDD8;--text:#D4C5A9;
+  --sm:clamp(11px,1.2vw,14px);--md:clamp(13px,1.5vw,17px);
+  --lg:clamp(18px,2.5vw,28px);--xl:clamp(32px,5vw,64px);--xxl:clamp(48px,8vw,110px);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);font-family:'Nunito',sans-serif;font-weight:300;cursor:none;}
+
+/* LOADER */
+#loader{position:fixed;inset:0;z-index:1000;background:var(--dark);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);}
+#loader.out{opacity:0;transform:translateY(-40px);pointer-events:none}
+.loader-brand{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,3vw,36px);font-weight:300;letter-spacing:.4em;color:var(--gold);opacity:0;transition:opacity 1s;}
+.loader-brand.vis{opacity:1}
+.loader-sub{font-size:var(--sm);letter-spacing:.25em;color:var(--text);opacity:0;transition:opacity 1s .4s;text-transform:uppercase;}
+.loader-sub.vis{opacity:.6}
+.loader-line{width:0;height:1px;background:var(--gold);transition:width 1.5s .2s cubic-bezier(.16,1,.3,1)}
+.loader-line.vis{width:120px}
+
+/* CURSOR */
+#cursor-dot{position:fixed;z-index:9999;pointer-events:none;width:8px;height:8px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);transition:transform .1s;}
+#cursor-ring{position:fixed;z-index:9998;pointer-events:none;width:32px;height:32px;border-radius:50%;border:1px solid rgba(201,168,76,.4);transform:translate(-50%,-50%);}
+
+/* PROGRESS */
+#progress{position:fixed;top:0;left:0;height:1px;z-index:100;background:linear-gradient(90deg,var(--gold),var(--amber));width:0%;transition:width .6s cubic-bezier(.16,1,.3,1);}
+
+/* SLIDE COUNTER + LABEL */
+#slide-counter{position:fixed;top:28px;right:36px;z-index:100;font-size:var(--sm);letter-spacing:.2em;color:var(--gold);font-family:'Cormorant Garamond',serif;font-weight:300;}
+#slide-label{position:fixed;top:28px;left:36px;z-index:100;font-size:var(--sm);letter-spacing:.25em;color:var(--text);text-transform:uppercase;opacity:.5;}
+
+/* ── LANGUAGE SWITCHER ────────────────────────────────── */
+#lang-switch{
+  position:fixed;top:22px;left:50%;transform:translateX(-50%);
+  z-index:200;
+  display:flex;align-items:center;gap:0;
+  background:rgba(10,8,6,.7);
+  border:1px solid rgba(201,168,76,.18);
+  backdrop-filter:blur(12px);
+  padding:0;overflow:hidden;
+}
+.lang-btn{
+  font-family:'Nunito',sans-serif;font-size:10px;
+  font-weight:300;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(201,168,76,.4);
+  background:transparent;border:none;
+  padding:8px 14px;cursor:pointer;
+  transition:color .3s,background .3s;
+  position:relative;
+}
+.lang-btn + .lang-btn::before{
+  content:'';position:absolute;left:0;top:25%;height:50%;
+  width:1px;background:rgba(201,168,76,.15);
+}
+.lang-btn:hover{color:rgba(201,168,76,.75);}
+.lang-btn.active{
+  color:var(--dark);
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  font-weight:400;
+}
+.lang-btn.active + .lang-btn::before,
+.lang-btn:has(+.lang-btn.active)::before{opacity:0;}
+
+/* ── PRICE STATUS ─────────────────────────────────────── */
+#price-status{position:fixed;bottom:56px;right:28px;z-index:100;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:rgba(201,168,76,.5);opacity:0;transition:opacity .5s;display:flex;align-items:center;gap:8px;}
+#price-status.visible{opacity:1}
+#price-status .ps-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
+
+/* NAV */
+#nav{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:10px;align-items:center;}
+.nav-dot{width:20px;height:1px;background:rgba(201,168,76,.3);cursor:pointer;transition:all .4s cubic-bezier(.16,1,.3,1);}
+.nav-dot.active{width:40px;background:var(--gold)}
+
+/* GLOBAL CANVAS */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* SLIDES */
+#slides{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .9s cubic-bezier(.16,1,.3,1);padding:60px 5%;}
+.slide.active{opacity:1;pointer-events:all}
+.slide::before{content:'';position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 80% 80% at 50% 50%,transparent 30%,rgba(0,0,0,.7) 100%);pointer-events:none;}
+.slide::after{content:'';position:absolute;inset:0;z-index:1;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.025;pointer-events:none;background-size:200px;}
+.slide-inner{position:relative;z-index:10;width:100%;max-width:1200px;text-align:center}
+/* Links dentro slide-inner sempre cliccabili */
+.slide-inner a{position:relative;z-index:20;}
+.corner{position:absolute;z-index:10;pointer-events:none}
+.corner-tl{top:20px;left:20px}.corner-tr{top:20px;right:20px;transform:scaleX(-1)}
+.corner-bl{bottom:20px;left:20px;transform:scaleY(-1)}.corner-br{bottom:20px;right:20px;transform:scale(-1)}
+.corner svg path{stroke:rgba(201,168,76,.25)}
+.r{opacity:0;transform:translateY(22px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+.slide.active .r{opacity:1;transform:translateY(0)}
+.slide.active .r:nth-child(1){transition-delay:.05s}.slide.active .r:nth-child(2){transition-delay:.18s}
+.slide.active .r:nth-child(3){transition-delay:.31s}.slide.active .r:nth-child(4){transition-delay:.44s}
+.slide.active .r:nth-child(5){transition-delay:.57s}.slide.active .r:nth-child(6){transition-delay:.70s}
+.slide.active .r:nth-child(7){transition-delay:.83s}
+
+/* TYPOGRAPHY */
+.eyebrow{font-size:var(--sm);letter-spacing:.35em;color:var(--gold);text-transform:uppercase;margin-bottom:16px;}
+.headline{font-family:'Cormorant Garamond',serif;font-size:var(--xxl);font-weight:300;color:var(--cream);line-height:1.05;margin-bottom:12px;}
+.headline em{font-style:italic;color:var(--gold)}
+.subline{font-family:'Lora',serif;font-size:var(--lg);color:var(--text);font-weight:400;line-height:1.5;margin-bottom:32px;}
+.subline em{font-style:italic;color:var(--gold2)}
+.body-text{font-size:var(--md);color:var(--text);line-height:1.7;max-width:680px;margin:0 auto;opacity:.8;}
+.divider{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:24px auto;}
+
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;width:100%;max-width:1100px;margin:0 auto;}
+.card{background:rgba(20,16,10,.7);border:1px solid rgba(201,168,76,.15);padding:36px 28px 32px;position:relative;overflow:hidden;backdrop-filter:blur(8px);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.card-name{font-family:'Cormorant Garamond',serif;font-size:clamp(16px,2vw,22px);font-weight:400;color:var(--cream);letter-spacing:.05em;margin-bottom:4px;}
+.card-latin{font-family:'Lora',serif;font-size:var(--sm);color:var(--gold);font-style:italic;letter-spacing:.1em;margin-bottom:20px;opacity:.8;}
+.card-price-block{margin-bottom:12px}
+.card-price{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,3.5vw,44px);font-weight:600;color:var(--gold2);line-height:1;transition:opacity .4s;}
+.card-quality{font-size:var(--sm);color:var(--text);letter-spacing:.15em;margin-top:4px;opacity:.6;}
+.card-price-alt{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,2.5vw,30px);font-weight:300;color:var(--text);line-height:1;margin-top:16px;padding-top:16px;border-top:1px solid rgba(201,168,76,.12);transition:opacity .4s;}
+.card-quality-alt{font-size:var(--sm);color:var(--text);letter-spacing:.15em;margin-top:4px;opacity:.4;}
+.card-badge{position:absolute;top:12px;right:12px;font-size:10px;letter-spacing:.2em;color:var(--gold);border:1px solid rgba(201,168,76,.3);padding:3px 8px;text-transform:uppercase;}
+@keyframes priceFlash{0%{color:var(--gold2);opacity:1}30%{color:#fff;opacity:.7}100%{color:var(--gold2);opacity:1}}
+.price-updated{animation:priceFlash .6s ease}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* SINGLE PRODUCT */
+.product-single{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;width:100%;max-width:1100px;margin:0 auto;text-align:left;}
+.product-single .price-display{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,7vw,90px);font-weight:300;color:var(--gold);line-height:1;transition:opacity .4s;}
+.product-single .quality-tag{display:inline-block;border:1px solid rgba(201,168,76,.3);font-size:var(--sm);letter-spacing:.2em;color:var(--gold);padding:5px 14px;margin-top:10px;text-transform:uppercase;}
+.product-badge{display:inline-block;font-size:var(--sm);letter-spacing:.2em;color:var(--text);border-top:1px solid rgba(201,168,76,.2);padding-top:14px;margin-top:14px;text-transform:uppercase;opacity:.5;}
+
+/* CTA */
+.cta-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:36px}
+.btn-primary{font-size:var(--sm);letter-spacing:.2em;text-transform:uppercase;color:var(--dark);background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;padding:16px 40px;cursor:pointer;display:inline-block;transition:opacity .3s,transform .3s;text-decoration:none;}
+.btn-primary:hover{opacity:.85;transform:translateY(-2px)}
+.btn-secondary{font-size:var(--sm);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);background:transparent;border:1px solid rgba(201,168,76,.4);padding:16px 40px;cursor:pointer;display:inline-block;transition:border-color .3s,transform .3s;text-decoration:none;}
+.btn-secondary:hover{border-color:var(--gold);transform:translateY(-2px)}
+.expire-banner{display:inline-flex;align-items:center;gap:12px;border:1px solid rgba(201,168,76,.3);padding:10px 28px;font-size:var(--sm);letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:28px;}
+.expire-banner .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite}
+
+/* SHIPPING */
+.shipping-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:100%;max-width:800px;margin:0 auto;}
+.ship-block{background:rgba(20,16,10,.6);border:1px solid rgba(201,168,76,.1);padding:32px 36px;text-align:left;backdrop-filter:blur(8px);}
+.ship-block .sh-eyebrow{font-size:10px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;}
+.ship-block .sh-title{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,2.5vw,30px);color:var(--cream);font-weight:300;margin-bottom:8px;}
+.ship-block .sh-time{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5vw,56px);color:var(--gold);font-weight:300;line-height:1;}
+.ship-block .sh-unit{font-size:var(--sm);color:var(--text);opacity:.5;margin-top:4px}
+#cover-canvas{position:absolute;inset:0;z-index:0;pointer-events:none}
+
+/* ── LOGO ─────────────────────────────────────────────────── */
+.logo-mark{
+  display:block;
+  width:clamp(140px,16vw,220px);
+  height:auto;
+  opacity:.92;
+  filter:drop-shadow(0 0 8px rgba(201,168,76,.2));
+}
+@media(max-width:768px){
+  .logo-mark{width:110px}
+}
+#cta-canvas{position:absolute;inset:0;z-index:0;pointer-events:none}
+/* Mobile bottom fade overlay */
+#mobile-fade-bottom{display:none;position:fixed;bottom:0;left:0;right:0;height:90px;background:linear-gradient(to top,rgba(10,8,6,.95) 0%,transparent 100%);z-index:150;pointer-events:none;}
+
+/* ── CONTACT SLIDE ──────────────────────────────────────── */
+.contact-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  width:100%;max-width:860px;margin:0 auto 12px;
+}
+.contact-card{
+  display:flex;align-items:center;gap:14px;
+  background:rgba(20,16,10,.7);
+  border:1px solid rgba(201,168,76,.15);
+  padding:18px 20px;
+  text-decoration:none;
+  transition:border-color .3s,background .3s;
+  position:relative;overflow:hidden;
+  z-index:20;                        /* sopra vignette e grain */
+  cursor:pointer;
+  pointer-events:auto;
+  touch-action:manipulation;         /* tappa = click, non scroll */
+  -webkit-tap-highlight-color:rgba(201,168,76,.15);
+}
+.contact-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.contact-card:hover{border-color:rgba(201,168,76,.4);background:rgba(20,16,10,.9);}
+.contact-card .cc-icon{
+  width:36px;height:36px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(201,168,76,.25);border-radius:2px;
+}
+.contact-card .cc-icon svg{width:18px;height:18px;fill:var(--gold);}
+.contact-card .cc-info{text-align:left;}
+.contact-card .cc-label{
+  font-size:9px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:3px;
+}
+.contact-card .cc-value{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(12px,1.4vw,15px);color:var(--cream);
+  letter-spacing:.04em;line-height:1.3;
+}
+.contact-card-full{
+  grid-column:1/-1;
+  background:rgba(201,168,76,.05);
+  border-color:rgba(201,168,76,.2);
+}
+.social-row{
+  display:flex;gap:10px;justify-content:center;
+  flex-wrap:wrap;width:100%;max-width:860px;margin:0 auto;
+}
+.social-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:rgba(20,16,10,.7);
+  border:1px solid rgba(201,168,76,.12);
+  padding:10px 16px;
+  min-height:44px;min-width:44px;
+  text-decoration:none;
+  transition:border-color .3s,background .3s;
+  position:relative;z-index:20;     /* sopra vignette e grain */
+  cursor:pointer;
+  pointer-events:auto;
+  touch-action:manipulation;         /* tappa = click, non scroll */
+  -webkit-tap-highlight-color:rgba(201,168,76,.15);
+}
+.social-btn:hover{border-color:rgba(201,168,76,.35);background:rgba(20,16,10,.9);}
+.social-btn svg{width:14px;height:14px;fill:var(--gold);flex-shrink:0;}
+.social-btn span{
+  font-size:9px;letter-spacing:.25em;text-transform:uppercase;
+  color:rgba(201,168,76,.65);white-space:nowrap;
+}
+@media(max-width:768px){
+  .contact-grid{grid-template-columns:1fr;gap:8px;margin-bottom:8px}
+  .contact-card{padding:14px 16px;gap:12px;min-height:56px}
+  .social-row{gap:7px}
+  .social-btn{
+    padding:0;
+    width:48px;height:48px;         /* quadrato 48×48 — abbondante per touch */
+    min-height:48px;min-width:48px;
+  }
+  .social-btn svg{width:18px;height:18px}  /* icona più grande su mobile */
+  .social-btn span{display:none}    /* solo icone su mobile */
+}
+/* ── MOBILE ──────────────────────────────────────────────── */
+@media(max-width:768px){
+  /* ── CURSOR: disabilitato su touch ── */
+  html,body{cursor:auto}
+  #cursor-dot,#cursor-ring{display:none}
+
+  /* ── SLIDE LABEL: nascosta, il counter è sufficiente ── */
+  #slide-label{display:none}
+
+  /* ── COUNTER: top-right compatto ── */
+  #slide-counter{top:14px;right:16px;font-size:10px}
+
+  /* ── EYEBROW: padding-right per non sovrapporsi al counter ── */
+  .eyebrow{padding-right:52px;padding-left:4px}
+
+  /* ── LANG SWITCHER → BASSO, sopra i nav dots ──
+     In alto creava overlap con i titoli delle slide.
+     In basso è più naturale su mobile e libera tutto il contenuto. */
+  #lang-switch{
+    top:auto;
+    bottom:50px;
+    transform:translateX(-50%);
+    background:rgba(8,6,4,.85);
+  }
+  .lang-btn{padding:6px 13px;font-size:9px;letter-spacing:.2em}
+
+  /* ── NAV DOTS: più in basso per fare spazio al lang switcher ── */
+  #nav{bottom:16px;gap:8px}
+  .nav-dot{height:3px;border-radius:2px}
+  .nav-dot.active{width:28px}
+
+  /* ── PRICE STATUS ── */
+  #price-status{display:none}
+
+  /* ── SLIDES: scrollabili + padding calibrato ── */
+  .slide{
+    padding:16px 5% 90px;
+    justify-content:flex-start;
+    align-items:center;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  /* ── COMPRESSIONE SPAZI slide 2 (card pricing) ──
+     Obiettivo: tutte e 3 le card + header visibili su iPhone 390×844
+     Risparmio calcolato: ~120px totali → contenuto ~730px nel viewport */
+  .eyebrow{margin-bottom:8px}                      /* -8px × 3 = -24px */
+  .divider{margin:10px auto}                        /* -28px su slide 2 */
+  .card{padding:14px 14px 12px}                     /* -32px × 3 = -96px — era 20/18 */
+  .card-latin{margin-bottom:10px}                   /* -10px × 3 = -30px */
+  .card-price-block{margin-bottom:6px}              /* -6px × 3 = -18px */
+  .card-price{font-size:clamp(24px,6.5vw,32px)}
+  .card-price-alt{font-size:clamp(17px,4.5vw,22px);margin-top:10px;padding-top:10px}
+  .card-quality{margin-top:2px}
+  .headline{margin-bottom:4px}
+
+  /* ── GRIDS: a colonna singola ── */
+  .cards-grid{grid-template-columns:1fr;gap:8px}
+  .product-single{grid-template-columns:1fr;gap:20px;text-align:center}
+  .product-single > div:last-child{text-align:center}
+  .product-single .price-display{font-size:clamp(44px,13vw,72px)}
+  .shipping-grid{grid-template-columns:1fr;gap:2px}
+  .slide-inner[style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr!important;gap:20px!important
+  }
+
+  /* ── ALTRI ELEMENTI ── */
+  .ship-block{padding:20px 16px}
+  .expire-banner{padding:7px 14px;font-size:9px;letter-spacing:.12em;margin-bottom:12px}
+
+  /* ── FIX 1: slide 3 — colonna destra centrata (override inline style:right) ── */
+  .product-single > div:last-child,
+  .product-single > div:last-child .eyebrow{text-align:center !important}
+  .product-single .quality-tag{display:block;text-align:center}
+  .product-single .price-display{text-align:center}
+
+  /* ── FIX 2+3: slide 4 — rimuovi border-left + padding quando le colonne si impilano ── */
+  .slide-inner > div + div[style*="border-left"]{
+    border-left:none !important;
+    padding-left:0 !important;
+    border-top:1px solid rgba(201,168,76,.12);
+    padding-top:28px;
+    margin-top:8px;
+  }
+
+  /* ── FIX 5: cursore pointer sui bottoni touch ── */
+  .lang-btn,.btn-primary,.btn-secondary{cursor:pointer}
+
+  /* ── FIX 6: backdrop sfumato fisso in basso — maschera il testo che scorre sotto lang+nav ── */
+  #mobile-fade-bottom{display:block}
+
+  /* ── CTA: bottoni full width ── */
+  .cta-row{flex-direction:column;align-items:center;gap:10px;margin-top:20px}
+  .btn-primary,.btn-secondary{width:100%;max-width:300px;padding:14px 20px;text-align:center}
+}
+
+/* ── ADAPTIVE PRODUCT GRID ─────────────────────────────── */
+.cards-grid[data-count="1"]{grid-template-columns:1fr;max-width:420px;margin:0 auto}
+.cards-grid[data-count="2"]{grid-template-columns:1fr 1fr;max-width:820px}
+.cards-grid[data-count="3"]{grid-template-columns:repeat(3,1fr)}
+.cards-grid[data-count="4"]{grid-template-columns:repeat(2,1fr)}
+.slide-inactive{display:none!important;}
+.detail-grid{display:grid;gap:24px;width:100%;margin:0 auto}
+.detail-grid[data-cols="1"]{grid-template-columns:1fr;max-width:700px}
+.detail-grid[data-cols="2"]{grid-template-columns:1fr 1fr;max-width:1000px}
+.detail-grid[data-cols="3"]{grid-template-columns:repeat(3,1fr);max-width:1100px}
+.detail-col{text-align:left;padding:0 12px}
+.detail-col .divider{margin-left:0;margin-right:0}
+@media(max-width:768px){
+  .detail-grid{grid-template-columns:1fr!important}
+  .detail-col+.detail-col{border-left:none!important;padding-left:0!important;border-top:1px solid rgba(201,168,76,.12);padding-top:20px;margin-top:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div style="margin-bottom:8px"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="logo-mark" viewBox="0 0 810 810" preserveAspectRatio="xMidYMid meet" version="1.0"><defs><clipPath id="89e0b3d45b"><path d="M 147 349 L 272 349 L 272 478 L 147 478 Z M 147 349 " clip-rule="nonzero"/></clipPath><clipPath id="cb6a3a8508"><path d="M 209.175781 408.898438 C 174.945312 408.898438 147.082031 382.1875 147.082031 349.339844 L 180.417969 349.339844 C 180.417969 363.789062 193.3125 375.566406 209.175781 375.566406 C 225.035156 375.566406 237.933594 363.789062 237.933594 349.339844 L 271.269531 349.339844 C 271.269531 382.1875 243.433594 408.898438 209.175781 408.898438 Z M 209.234375 417.566406 C 175.003906 417.566406 147.140625 444.28125 147.140625 477.125 L 180.472656 477.125 C 180.472656 462.675781 193.371094 450.902344 209.234375 450.902344 C 225.09375 450.902344 237.992188 462.675781 237.992188 477.125 L 271.328125 477.125 C 271.328125 444.28125 243.488281 417.566406 209.234375 417.566406 Z M 209.234375 417.566406 " clip-rule="nonzero"/></clipPath><linearGradient x1="96.535" gradientTransform="matrix(2.878713, 0, 0, 2.878713, -5.69213, -5.69212)" y1="167.415005" x2="52.760001" gradientUnits="userSpaceOnUse" y2="123.640002" id="f820aeb687"><stop stop-opacity="1" stop-color="rgb(52.159119%, 38.42926%, 26.669312%)" offset="0"/><stop stop-opacity="1" stop-color="rgb(52.34375%, 38.618469%, 26.823425%)" offset="0.0078125"/><stop stop-opacity="1" stop-color="rgb(52.714539%, 39.001465%, 27.134705%)" offset="0.015625"/><stop stop-opacity="1" stop-color="rgb(53.089905%, 39.387512%, 27.449036%)" offset="0.0234375"/><stop stop-opacity="1" stop-color="rgb(53.463745%, 39.77356%, 27.763367%)" offset="0.03125"/><stop stop-opacity="1" stop-color="rgb(53.839111%, 40.159607%, 28.077698%)" offset="0.0390625"/><stop stop-opacity="1" stop-color="rgb(54.212952%, 40.545654%, 28.392029%)" offset="0.046875"/><stop stop-opacity="1" stop-color="rgb(54.586792%, 40.930176%, 28.704834%)" offset="0.0546875"/><stop stop-opacity="1" stop-color="rgb(54.962158%, 41.316223%, 29.019165%)" offset="0.0625"/><stop stop-opacity="1" stop-color="rgb(55.335999%, 41.702271%, 29.333496%)" offset="0.0703125"/><stop stop-opacity="1" stop-color="rgb(55.711365%, 42.088318%, 29.647827%)" offset="0.078125"/><stop stop-opacity="1" stop-color="rgb(56.085205%, 42.474365%, 29.960632%)" offset="0.0859375"/><stop stop-opacity="1" stop-color="rgb(56.459045%, 42.860413%, 30.274963%)" offset="0.09375"/><stop stop-opacity="1" stop-color="rgb(56.834412%, 43.24646%, 30.589294%)" offset="0.101562"/><stop stop-opacity="1" stop-color="rgb(57.208252%, 43.632507%, 30.903625%)" offset="0.109375"/><stop stop-opacity="1" stop-color="rgb(57.583618%, 44.017029%, 31.217957%)" offset="0.117187"/><stop stop-opacity="1" stop-color="rgb(57.957458%, 44.403076%, 31.530762%)" offset="0.125"/><stop stop-opacity="1" stop-color="rgb(58.331299%, 44.789124%, 31.845093%)" offset="0.132812"/><stop stop-opacity="1" stop-color="rgb(58.706665%, 45.175171%, 32.159424%)" offset="0.140625"/><stop stop-opacity="1" stop-color="rgb(59.080505%, 45.561218%, 32.473755%)" offset="0.148438"/><stop stop-opacity="1" stop-color="rgb(59.455872%, 45.947266%, 32.78656%)" offset="0.15625"/><stop stop-opacity="1" stop-color="rgb(59.829712%, 46.333313%, 33.100891%)" offset="0.164062"/><stop stop-opacity="1" stop-color="rgb(60.203552%, 46.71936%, 33.415222%)" offset="0.171875"/><stop stop-opacity="1" stop-color="rgb(60.578918%, 47.103882%, 33.729553%)" offset="0.179688"/><stop stop-opacity="1" stop-color="rgb(60.952759%, 47.489929%, 34.042358%)" offset="0.1875"/><stop stop-opacity="1" stop-color="rgb(61.328125%, 47.875977%, 34.356689%)" offset="0.195312"/><stop stop-opacity="1" stop-color="rgb(61.701965%, 48.262024%, 34.671021%)" offset="0.203125"/><stop stop-opacity="1" stop-color="rgb(62.077332%, 48.648071%, 34.985352%)" offset="0.210938"/><stop stop-opacity="1" stop-color="rgb(62.451172%, 49.034119%, 35.299683%)" offset="0.21875"/><stop stop-opacity="1" stop-color="rgb(62.825012%, 49.420166%, 35.612488%)" offset="0.226562"/><stop stop-opacity="1" stop-color="rgb(63.200378%, 49.804688%, 35.926819%)" offset="0.234375"/><stop stop-opacity="1" stop-color="rgb(63.574219%, 50.190735%, 36.24115%)" offset="0.242188"/><stop stop-opacity="1" stop-color="rgb(63.949585%, 50.576782%, 36.555481%)" offset="0.25"/><stop stop-opacity="1" stop-color="rgb(64.323425%, 50.96283%, 36.868286%)" offset="0.257812"/><stop stop-opacity="1" stop-color="rgb(64.697266%, 51.348877%, 37.182617%)" offset="0.265625"/><stop stop-opacity="1" stop-color="rgb(65.072632%, 51.734924%, 37.496948%)" offset="0.273438"/><stop stop-opacity="1" stop-color="rgb(65.446472%, 52.120972%, 37.811279%)" offset="0.28125"/><stop stop-opacity="1" stop-color="rgb(65.821838%, 52.507019%, 38.124084%)" offset="0.289063"/><stop stop-opacity="1" stop-color="rgb(66.195679%, 52.891541%, 38.438416%)" offset="0.296875"/><stop stop-opacity="1" stop-color="rgb(66.569519%, 53.277588%, 38.752747%)" offset="0.304688"/><stop stop-opacity="1" stop-color="rgb(66.944885%, 53.663635%, 39.067078%)" offset="0.3125"/><stop stop-opacity="1" stop-color="rgb(67.318726%, 54.049683%, 39.381409%)" offset="0.320313"/><stop stop-opacity="1" stop-color="rgb(67.694092%, 54.43573%, 39.694214%)" offset="0.328125"/><stop stop-opacity="1" stop-color="rgb(68.067932%, 54.821777%, 40.008545%)" offset="0.335937"/><stop stop-opacity="1" stop-color="rgb(68.441772%, 55.207825%, 40.322876%)" offset="0.34375"/><stop stop-opacity="1" stop-color="rgb(68.817139%, 55.592346%, 40.637207%)" offset="0.351562"/><stop stop-opacity="1" stop-color="rgb(69.190979%, 55.978394%, 40.950012%)" offset="0.359375"/><stop stop-opacity="1" stop-color="rgb(69.566345%, 56.364441%, 41.264343%)" offset="0.367187"/><stop stop-opacity="1" stop-color="rgb(69.940186%, 56.750488%, 41.578674%)" offset="0.375"/><stop stop-opacity="1" stop-color="rgb(70.315552%, 57.136536%, 41.893005%)" offset="0.382812"/><stop stop-opacity="1" stop-color="rgb(70.689392%, 57.522583%, 42.207336%)" offset="0.390625"/><stop stop-opacity="1" stop-color="rgb(71.063232%, 57.90863%, 42.520142%)" offset="0.398437"/><stop stop-opacity="1" stop-color="rgb(71.438599%, 58.294678%, 42.834473%)" offset="0.40625"/><stop stop-opacity="1" stop-color="rgb(71.812439%, 58.679199%, 43.148804%)" offset="0.414062"/><stop stop-opacity="1" stop-color="rgb(72.187805%, 59.065247%, 43.463135%)" offset="0.421875"/><stop stop-opacity="1" stop-color="rgb(72.561646%, 59.451294%, 43.77594%)" offset="0.429688"/><stop stop-opacity="1" stop-color="rgb(72.935486%, 59.837341%, 44.090271%)" offset="0.4375"/><stop stop-opacity="1" stop-color="rgb(73.310852%, 60.223389%, 44.404602%)" offset="0.445312"/><stop stop-opacity="1" stop-color="rgb(73.684692%, 60.609436%, 44.718933%)" offset="0.453125"/><stop stop-opacity="1" stop-color="rgb(74.060059%, 60.995483%, 45.031738%)" offset="0.460938"/><stop stop-opacity="1" stop-color="rgb(74.433899%, 61.381531%, 45.346069%)" offset="0.46875"/><stop stop-opacity="1" stop-color="rgb(74.807739%, 61.766052%, 45.6604%)" offset="0.476563"/><stop stop-opacity="1" stop-color="rgb(75.183105%, 62.1521%, 45.974731%)" offset="0.484375"/><stop stop-opacity="1" stop-color="rgb(75.556946%, 62.538147%, 46.289062%)" offset="0.492188"/><stop stop-opacity="1" stop-color="rgb(75.932312%, 62.924194%, 46.601868%)" offset="0.492975"/><stop stop-opacity="1" stop-color="rgb(76.119995%, 63.117981%, 46.759033%)" offset="0.5"/><stop stop-opacity="1" stop-color="rgb(76.306152%, 63.310242%, 46.916199%)" offset="0.507025"/><stop stop-opacity="1" stop-color="rgb(76.493835%, 63.504028%, 47.073364%)" offset="0.507812"/><stop stop-opacity="1" stop-color="rgb(76.679993%, 63.696289%, 47.23053%)" offset="0.515625"/><stop stop-opacity="1" stop-color="rgb(77.055359%, 64.082336%, 47.544861%)" offset="0.523438"/><stop stop-opacity="1" stop-color="rgb(77.429199%, 64.466858%, 47.857666%)" offset="0.53125"/><stop stop-opacity="1" stop-color="rgb(77.804565%, 64.852905%, 48.171997%)" offset="0.539062"/><stop stop-opacity="1" stop-color="rgb(78.178406%, 65.238953%, 48.486328%)" offset="0.546875"/><stop stop-opacity="1" stop-color="rgb(78.553772%, 65.625%, 48.800659%)" offset="0.554687"/><stop stop-opacity="1" stop-color="rgb(78.927612%, 66.011047%, 49.11499%)" offset="0.5625"/><stop stop-opacity="1" stop-color="rgb(79.301453%, 66.397095%, 49.427795%)" offset="0.570312"/><stop stop-opacity="1" stop-color="rgb(79.676819%, 66.783142%, 49.742126%)" offset="0.578125"/><stop stop-opacity="1" stop-color="rgb(80.050659%, 67.169189%, 50.056458%)" offset="0.585938"/><stop stop-opacity="1" stop-color="rgb(80.426025%, 67.553711%, 50.370789%)" offset="0.59375"/><stop stop-opacity="1" stop-color="rgb(80.799866%, 67.939758%, 50.683594%)" offset="0.601563"/><stop stop-opacity="1" stop-color="rgb(81.173706%, 68.325806%, 50.997925%)" offset="0.609375"/><stop stop-opacity="1" stop-color="rgb(81.549072%, 68.711853%, 51.312256%)" offset="0.617188"/><stop stop-opacity="1" stop-color="rgb(81.922913%, 69.0979%, 51.626587%)" offset="0.625"/><stop stop-opacity="1" stop-color="rgb(82.298279%, 69.483948%, 51.939392%)" offset="0.632812"/><stop stop-opacity="1" stop-color="rgb(82.672119%, 69.869995%, 52.253723%)" offset="0.640625"/><stop stop-opacity="1" stop-color="rgb(83.045959%, 70.254517%, 52.568054%)" offset="0.648438"/><stop stop-opacity="1" stop-color="rgb(83.421326%, 70.640564%, 52.882385%)" offset="0.65625"/><stop stop-opacity="1" stop-color="rgb(83.795166%, 71.026611%, 53.196716%)" offset="0.664062"/><stop stop-opacity="1" stop-color="rgb(84.170532%, 71.412659%, 53.509521%)" offset="0.671875"/><stop stop-opacity="1" stop-color="rgb(84.544373%, 71.798706%, 53.823853%)" offset="0.679688"/><stop stop-opacity="1" stop-color="rgb(84.918213%, 72.184753%, 54.138184%)" offset="0.6875"/><stop stop-opacity="1" stop-color="rgb(85.293579%, 72.570801%, 54.452515%)" offset="0.695313"/><stop stop-opacity="1" stop-color="rgb(85.667419%, 72.956848%, 54.76532%)" offset="0.703125"/><stop stop-opacity="1" stop-color="rgb(86.042786%, 73.34137%, 55.079651%)" offset="0.710938"/><stop stop-opacity="1" stop-color="rgb(86.416626%, 73.727417%, 55.393982%)" offset="0.71875"/><stop stop-opacity="1" stop-color="rgb(86.791992%, 74.113464%, 55.708313%)" offset="0.726562"/><stop stop-opacity="1" stop-color="rgb(87.165833%, 74.499512%, 56.021118%)" offset="0.734375"/><stop stop-opacity="1" stop-color="rgb(87.539673%, 74.885559%, 56.335449%)" offset="0.742188"/><stop stop-opacity="1" stop-color="rgb(87.915039%, 75.271606%, 56.64978%)" offset="0.75"/><stop stop-opacity="1" stop-color="rgb(88.288879%, 75.657654%, 56.964111%)" offset="0.757813"/><stop stop-opacity="1" stop-color="rgb(88.664246%, 76.043701%, 57.278442%)" offset="0.765625"/><stop stop-opacity="1" stop-color="rgb(89.038086%, 76.428223%, 57.591248%)" offset="0.773438"/><stop stop-opacity="1" stop-color="rgb(89.411926%, 76.81427%, 57.905579%)" offset="0.78125"/><stop stop-opacity="1" stop-color="rgb(89.787292%, 77.200317%, 58.21991%)" offset="0.789062"/><stop stop-opacity="1" stop-color="rgb(90.161133%, 77.586365%, 58.534241%)" offset="0.796875"/><stop stop-opacity="1" stop-color="rgb(90.536499%, 77.972412%, 58.847046%)" offset="0.804688"/><stop stop-opacity="1" stop-color="rgb(90.85083%, 78.297424%, 59.111023%)" offset="0.8125"/><stop stop-opacity="1" stop-color="rgb(90.979004%, 78.42865%, 59.21936%)" offset="0.875"/><stop stop-opacity="1" stop-color="rgb(90.979004%, 78.42865%, 59.21936%)" offset="1"/></linearGradient></defs><g clip-path="url(#89e0b3d45b)"><g clip-path="url(#cb6a3a8508)"><path fill="url(#f820aeb687)" d="M 147.082031 349.339844 L 147.082031 477.125 L 271.328125 477.125 L 271.328125 349.339844 Z M 147.082031 349.339844 " fill-rule="nonzero"/></g></g><path fill="#ffffff" d="M 390.648438 348.878906 C 405.761719 348.101562 418.113281 357.371094 419.0625 372.917969 C 420.070312 389.441406 407.34375 401.414062 391.023438 400.550781 C 357.542969 398.738281 357.660156 350.578125 390.679688 348.90625 Z M 392.117188 359.53125 C 371.851562 359.90625 372.597656 391.597656 394.332031 389.726562 C 412.5 388.171875 411.808594 359.183594 392.117188 359.53125 Z M 392.117188 359.53125 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 326.023438 349.886719 L 326.023438 368.855469 L 345.425781 368.855469 C 345.367188 368.65625 345.625 368.398438 345.625 368.339844 L 345.625 350.203125 C 345.625 350.203125 345.367188 350.03125 345.425781 349.886719 L 356.910156 349.886719 L 356.910156 399.515625 L 345.425781 399.515625 L 345.425781 379.507812 L 326.023438 379.507812 L 326.023438 399.515625 L 314.765625 399.515625 L 314.765625 349.886719 Z M 326.023438 349.886719 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 439.097656 349.886719 L 439.097656 381.0625 C 439.097656 384.257812 441.746094 388.257812 444.828125 389.296875 C 451.359375 391.484375 458.070312 387.625 458.070312 380.429688 L 458.070312 349.886719 L 469.324219 349.886719 L 469.324219 381.496094 C 468.402344 395.6875 456.886719 402.683594 443.414062 400.089844 C 420.675781 395.714844 429.367188 366.957031 427.582031 350.605469 L 427.898438 349.886719 Z M 439.097656 349.886719 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 488.84375 383.652344 C 489.503906 384.488281 489.300781 385.523438 489.675781 386.5625 C 492.238281 393.816406 508.476562 392.40625 505.566406 384.230469 C 504.097656 380.113281 495.953125 379.191406 492.296875 378.125 C 484.09375 375.738281 477.585938 371.246094 478.566406 361.6875 C 480.003906 347.410156 501.855469 345.480469 510.980469 353.023438 C 514.691406 356.105469 516.246094 360.222656 516.535156 364.972656 C 516.507812 365.113281 516.046875 365.316406 515.988281 365.316406 L 505.96875 365.316406 C 505.480469 365.316406 505.222656 362.582031 504.847656 361.832031 C 502.054688 355.933594 488.410156 356.9375 489.648438 364.105469 C 490.394531 368.511719 498.746094 369.605469 502.285156 370.671875 C 510.75 373.261719 518.089844 376.859375 517.339844 387.109375 C 515.988281 405.761719 478.9375 405.417969 478.132812 385.035156 C 478.132812 384.546875 478.019531 383.96875 478.449219 383.683594 L 488.871094 383.683594 Z M 488.84375 383.652344 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 559.429688 349.886719 L 559.429688 358.953125 L 559.113281 359.269531 L 537.953125 359.269531 L 537.953125 369.691406 L 557.355469 369.691406 L 557.355469 379.078125 L 537.953125 379.078125 L 537.953125 389.902344 L 560.0625 389.902344 L 560.0625 399.515625 L 526.695312 399.515625 L 526.695312 349.886719 Z M 559.429688 349.886719 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 593.800781 378.789062 L 594.75 378.789062 C 609.890625 379.164062 609.058594 401.730469 593.511719 400.753906 C 579.550781 399.859375 579.578125 379.363281 593.800781 378.789062 Z M 593.339844 383.421875 C 589.597656 383.828125 587.554688 387.339844 588.042969 390.878906 C 589.078125 398.21875 600.25 397.902344 600.707031 390.359375 C 600.996094 385.8125 597.800781 382.933594 593.339844 383.421875 Z M 593.339844 383.421875 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 622.789062 379.21875 L 622.789062 383.566406 L 614.355469 383.566406 L 614.355469 388.808594 L 621.925781 388.808594 L 622.039062 388.949219 C 622.039062 388.949219 621.984375 389.007812 621.984375 389.035156 L 621.984375 393.066406 L 614.355469 393.066406 L 614.355469 400.320312 L 609.574219 400.320312 L 609.574219 379.21875 Z M 622.789062 379.21875 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 650.019531 429.742188 C 662.976562 442.265625 658.65625 466.1875 641.355469 472.492188 C 620.800781 480.003906 600.390625 464.488281 604.96875 442.351562 C 609.144531 422.085938 636 416.15625 650.050781 429.742188 Z M 630.445312 433.226562 C 610.207031 433.65625 611.101562 465.179688 632.664062 463.394531 C 650.882812 461.898438 650.394531 432.765625 630.445312 433.226562 Z M 630.445312 433.226562 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 416.703125 423.582031 L 440.394531 423.582031 C 455.9375 423.378906 462.414062 444.710938 450.8125 453.808594 C 450.035156 454.414062 448.023438 455.332031 447.589844 455.792969 C 447.476562 455.910156 447.332031 455.996094 447.359375 456.199219 L 457.378906 473.210938 L 444.25 473.210938 L 435.699219 457.78125 L 428.300781 457.78125 L 427.984375 458.097656 L 427.984375 473.210938 L 416.730469 473.210938 L 416.730469 423.582031 Z M 427.957031 448.195312 L 438.0625 448.195312 C 447.503906 448.195312 447.445312 433.167969 438.0625 433.167969 L 427.957031 433.167969 Z M 427.957031 448.195312 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 524.941406 423.582031 L 524.941406 453.921875 C 524.941406 461.175781 531.101562 465.035156 537.867188 463.105469 C 541.003906 462.214844 543.910156 458.183594 543.910156 454.988281 L 543.910156 423.609375 L 555.082031 423.609375 L 555.398438 424.328125 C 554.648438 435.039062 556.578125 447.359375 554.910156 457.867188 C 551.167969 481.558594 513.945312 479.140625 513.65625 455.015625 L 513.65625 423.609375 L 524.941406 423.609375 Z M 524.941406 423.582031 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 359.53125 473.210938 L 378.933594 423.898438 C 379.078125 423.582031 379.335938 423.582031 379.625 423.554688 C 382.90625 423.179688 386.878906 423.871094 390.246094 423.554688 L 409.992188 473.210938 L 397.988281 473.210938 L 394.421875 464.691406 L 375.046875 464.632812 L 371.304688 473.210938 Z M 377.695312 455.707031 L 391.65625 455.707031 L 384.863281 437.976562 L 377.667969 455.707031 Z M 377.695312 455.707031 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 598.175781 433.597656 L 578.6875 433.597656 C 578.6875 433.597656 578.371094 433.886719 578.167969 433.800781 L 578.167969 446.09375 L 596.015625 446.09375 L 596.332031 446.410156 L 596.332031 456.109375 L 578.195312 456.109375 L 578.195312 473.210938 L 566.941406 473.210938 L 566.941406 423.667969 L 598.234375 423.667969 L 598.234375 433.570312 Z M 598.175781 433.597656 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 356.421875 434.003906 L 340.789062 434.003906 L 340.789062 473.210938 L 329.621094 473.210938 L 329.304688 472.894531 L 329.304688 434.003906 L 313.671875 434.003906 L 313.671875 423.582031 L 355.902344 423.582031 C 355.902344 423.582031 356.132812 423.207031 356.421875 423.695312 L 356.421875 434.03125 Z M 356.421875 434.003906 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 505.96875 423.582031 L 505.96875 434.003906 L 490.425781 434.003906 L 490.109375 434.320312 L 490.109375 473.210938 L 478.851562 473.210938 L 478.851562 434.320312 L 478.535156 434.003906 L 462.992188 434.003906 L 462.992188 423.667969 L 463.308594 423.410156 C 463.308594 423.410156 463.453125 423.582031 463.507812 423.582031 Z M 505.96875 423.582031 " fill-opacity="1" fill-rule="nonzero"/></svg></div>
+  <div class="loader-brand">HOUSE OF TARTUFO</div>
+  <div class="loader-line"></div>
+  <div class="loader-sub" data-i18n="loader-sub">Weekly Italian Truffles Selection</div>
+</div>
+
+<!-- CURSOR -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- PROGRESS -->
+<div id="progress"></div>
+
+<!-- UI -->
+<div id="slide-label">Cover</div>
+<div id="slide-counter">01 — 07</div>
+
+<!-- LANGUAGE SWITCHER -->
+<div id="lang-switch">
+  <button class="lang-btn active" data-lang="it">IT</button>
+  <button class="lang-btn" data-lang="en">EN</button>
+  <button class="lang-btn" data-lang="fr">FR</button>
+  <button class="lang-btn" data-lang="nl">NL</button>
+</div>
+
+<div id="nav"></div>
+<div id="price-status"><span class="ps-dot"></span><span id="ps-text">Live</span></div>
+<div id="mobile-fade-bottom"></div>
+<canvas id="bg-canvas"></canvas>
+
+<!-- SLIDES -->
+<div id="slides">
+
+  <!-- SLIDE 1 — COVER -->
+  <div class="slide active" data-label-i18n="nav-0" id="s0">
+    <canvas id="cover-canvas"></canvas>
+    <div class="corner corner-tl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-tr"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-bl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-br"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div style="position:absolute;top:28px;left:36px;z-index:20;">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="logo-mark" style="width:clamp(120px,14vw,200px)" viewBox="0 0 810 810" preserveAspectRatio="xMidYMid meet" version="1.0"><defs><clipPath id="89e0b3d45b"><path d="M 147 349 L 272 349 L 272 478 L 147 478 Z M 147 349 " clip-rule="nonzero"/></clipPath><clipPath id="cb6a3a8508"><path d="M 209.175781 408.898438 C 174.945312 408.898438 147.082031 382.1875 147.082031 349.339844 L 180.417969 349.339844 C 180.417969 363.789062 193.3125 375.566406 209.175781 375.566406 C 225.035156 375.566406 237.933594 363.789062 237.933594 349.339844 L 271.269531 349.339844 C 271.269531 382.1875 243.433594 408.898438 209.175781 408.898438 Z M 209.234375 417.566406 C 175.003906 417.566406 147.140625 444.28125 147.140625 477.125 L 180.472656 477.125 C 180.472656 462.675781 193.371094 450.902344 209.234375 450.902344 C 225.09375 450.902344 237.992188 462.675781 237.992188 477.125 L 271.328125 477.125 C 271.328125 444.28125 243.488281 417.566406 209.234375 417.566406 Z M 209.234375 417.566406 " clip-rule="nonzero"/></clipPath><linearGradient x1="96.535" gradientTransform="matrix(2.878713, 0, 0, 2.878713, -5.69213, -5.69212)" y1="167.415005" x2="52.760001" gradientUnits="userSpaceOnUse" y2="123.640002" id="f820aeb687"><stop stop-opacity="1" stop-color="rgb(52.159119%, 38.42926%, 26.669312%)" offset="0"/><stop stop-opacity="1" stop-color="rgb(52.34375%, 38.618469%, 26.823425%)" offset="0.0078125"/><stop stop-opacity="1" stop-color="rgb(52.714539%, 39.001465%, 27.134705%)" offset="0.015625"/><stop stop-opacity="1" stop-color="rgb(53.089905%, 39.387512%, 27.449036%)" offset="0.0234375"/><stop stop-opacity="1" stop-color="rgb(53.463745%, 39.77356%, 27.763367%)" offset="0.03125"/><stop stop-opacity="1" stop-color="rgb(53.839111%, 40.159607%, 28.077698%)" offset="0.0390625"/><stop stop-opacity="1" stop-color="rgb(54.212952%, 40.545654%, 28.392029%)" offset="0.046875"/><stop stop-opacity="1" stop-color="rgb(54.586792%, 40.930176%, 28.704834%)" offset="0.0546875"/><stop stop-opacity="1" stop-color="rgb(54.962158%, 41.316223%, 29.019165%)" offset="0.0625"/><stop stop-opacity="1" stop-color="rgb(55.335999%, 41.702271%, 29.333496%)" offset="0.0703125"/><stop stop-opacity="1" stop-color="rgb(55.711365%, 42.088318%, 29.647827%)" offset="0.078125"/><stop stop-opacity="1" stop-color="rgb(56.085205%, 42.474365%, 29.960632%)" offset="0.0859375"/><stop stop-opacity="1" stop-color="rgb(56.459045%, 42.860413%, 30.274963%)" offset="0.09375"/><stop stop-opacity="1" stop-color="rgb(56.834412%, 43.24646%, 30.589294%)" offset="0.101562"/><stop stop-opacity="1" stop-color="rgb(57.208252%, 43.632507%, 30.903625%)" offset="0.109375"/><stop stop-opacity="1" stop-color="rgb(57.583618%, 44.017029%, 31.217957%)" offset="0.117187"/><stop stop-opacity="1" stop-color="rgb(57.957458%, 44.403076%, 31.530762%)" offset="0.125"/><stop stop-opacity="1" stop-color="rgb(58.331299%, 44.789124%, 31.845093%)" offset="0.132812"/><stop stop-opacity="1" stop-color="rgb(58.706665%, 45.175171%, 32.159424%)" offset="0.140625"/><stop stop-opacity="1" stop-color="rgb(59.080505%, 45.561218%, 32.473755%)" offset="0.148438"/><stop stop-opacity="1" stop-color="rgb(59.455872%, 45.947266%, 32.78656%)" offset="0.15625"/><stop stop-opacity="1" stop-color="rgb(59.829712%, 46.333313%, 33.100891%)" offset="0.164062"/><stop stop-opacity="1" stop-color="rgb(60.203552%, 46.71936%, 33.415222%)" offset="0.171875"/><stop stop-opacity="1" stop-color="rgb(60.578918%, 47.103882%, 33.729553%)" offset="0.179688"/><stop stop-opacity="1" stop-color="rgb(60.952759%, 47.489929%, 34.042358%)" offset="0.1875"/><stop stop-opacity="1" stop-color="rgb(61.328125%, 47.875977%, 34.356689%)" offset="0.195312"/><stop stop-opacity="1" stop-color="rgb(61.701965%, 48.262024%, 34.671021%)" offset="0.203125"/><stop stop-opacity="1" stop-color="rgb(62.077332%, 48.648071%, 34.985352%)" offset="0.210938"/><stop stop-opacity="1" stop-color="rgb(62.451172%, 49.034119%, 35.299683%)" offset="0.21875"/><stop stop-opacity="1" stop-color="rgb(62.825012%, 49.420166%, 35.612488%)" offset="0.226562"/><stop stop-opacity="1" stop-color="rgb(63.200378%, 49.804688%, 35.926819%)" offset="0.234375"/><stop stop-opacity="1" stop-color="rgb(63.574219%, 50.190735%, 36.24115%)" offset="0.242188"/><stop stop-opacity="1" stop-color="rgb(63.949585%, 50.576782%, 36.555481%)" offset="0.25"/><stop stop-opacity="1" stop-color="rgb(64.323425%, 50.96283%, 36.868286%)" offset="0.257812"/><stop stop-opacity="1" stop-color="rgb(64.697266%, 51.348877%, 37.182617%)" offset="0.265625"/><stop stop-opacity="1" stop-color="rgb(65.072632%, 51.734924%, 37.496948%)" offset="0.273438"/><stop stop-opacity="1" stop-color="rgb(65.446472%, 52.120972%, 37.811279%)" offset="0.28125"/><stop stop-opacity="1" stop-color="rgb(65.821838%, 52.507019%, 38.124084%)" offset="0.289063"/><stop stop-opacity="1" stop-color="rgb(66.195679%, 52.891541%, 38.438416%)" offset="0.296875"/><stop stop-opacity="1" stop-color="rgb(66.569519%, 53.277588%, 38.752747%)" offset="0.304688"/><stop stop-opacity="1" stop-color="rgb(66.944885%, 53.663635%, 39.067078%)" offset="0.3125"/><stop stop-opacity="1" stop-color="rgb(67.318726%, 54.049683%, 39.381409%)" offset="0.320313"/><stop stop-opacity="1" stop-color="rgb(67.694092%, 54.43573%, 39.694214%)" offset="0.328125"/><stop stop-opacity="1" stop-color="rgb(68.067932%, 54.821777%, 40.008545%)" offset="0.335937"/><stop stop-opacity="1" stop-color="rgb(68.441772%, 55.207825%, 40.322876%)" offset="0.34375"/><stop stop-opacity="1" stop-color="rgb(68.817139%, 55.592346%, 40.637207%)" offset="0.351562"/><stop stop-opacity="1" stop-color="rgb(69.190979%, 55.978394%, 40.950012%)" offset="0.359375"/><stop stop-opacity="1" stop-color="rgb(69.566345%, 56.364441%, 41.264343%)" offset="0.367187"/><stop stop-opacity="1" stop-color="rgb(69.940186%, 56.750488%, 41.578674%)" offset="0.375"/><stop stop-opacity="1" stop-color="rgb(70.315552%, 57.136536%, 41.893005%)" offset="0.382812"/><stop stop-opacity="1" stop-color="rgb(70.689392%, 57.522583%, 42.207336%)" offset="0.390625"/><stop stop-opacity="1" stop-color="rgb(71.063232%, 57.90863%, 42.520142%)" offset="0.398437"/><stop stop-opacity="1" stop-color="rgb(71.438599%, 58.294678%, 42.834473%)" offset="0.40625"/><stop stop-opacity="1" stop-color="rgb(71.812439%, 58.679199%, 43.148804%)" offset="0.414062"/><stop stop-opacity="1" stop-color="rgb(72.187805%, 59.065247%, 43.463135%)" offset="0.421875"/><stop stop-opacity="1" stop-color="rgb(72.561646%, 59.451294%, 43.77594%)" offset="0.429688"/><stop stop-opacity="1" stop-color="rgb(72.935486%, 59.837341%, 44.090271%)" offset="0.4375"/><stop stop-opacity="1" stop-color="rgb(73.310852%, 60.223389%, 44.404602%)" offset="0.445312"/><stop stop-opacity="1" stop-color="rgb(73.684692%, 60.609436%, 44.718933%)" offset="0.453125"/><stop stop-opacity="1" stop-color="rgb(74.060059%, 60.995483%, 45.031738%)" offset="0.460938"/><stop stop-opacity="1" stop-color="rgb(74.433899%, 61.381531%, 45.346069%)" offset="0.46875"/><stop stop-opacity="1" stop-color="rgb(74.807739%, 61.766052%, 45.6604%)" offset="0.476563"/><stop stop-opacity="1" stop-color="rgb(75.183105%, 62.1521%, 45.974731%)" offset="0.484375"/><stop stop-opacity="1" stop-color="rgb(75.556946%, 62.538147%, 46.289062%)" offset="0.492188"/><stop stop-opacity="1" stop-color="rgb(75.932312%, 62.924194%, 46.601868%)" offset="0.492975"/><stop stop-opacity="1" stop-color="rgb(76.119995%, 63.117981%, 46.759033%)" offset="0.5"/><stop stop-opacity="1" stop-color="rgb(76.306152%, 63.310242%, 46.916199%)" offset="0.507025"/><stop stop-opacity="1" stop-color="rgb(76.493835%, 63.504028%, 47.073364%)" offset="0.507812"/><stop stop-opacity="1" stop-color="rgb(76.679993%, 63.696289%, 47.23053%)" offset="0.515625"/><stop stop-opacity="1" stop-color="rgb(77.055359%, 64.082336%, 47.544861%)" offset="0.523438"/><stop stop-opacity="1" stop-color="rgb(77.429199%, 64.466858%, 47.857666%)" offset="0.53125"/><stop stop-opacity="1" stop-color="rgb(77.804565%, 64.852905%, 48.171997%)" offset="0.539062"/><stop stop-opacity="1" stop-color="rgb(78.178406%, 65.238953%, 48.486328%)" offset="0.546875"/><stop stop-opacity="1" stop-color="rgb(78.553772%, 65.625%, 48.800659%)" offset="0.554687"/><stop stop-opacity="1" stop-color="rgb(78.927612%, 66.011047%, 49.11499%)" offset="0.5625"/><stop stop-opacity="1" stop-color="rgb(79.301453%, 66.397095%, 49.427795%)" offset="0.570312"/><stop stop-opacity="1" stop-color="rgb(79.676819%, 66.783142%, 49.742126%)" offset="0.578125"/><stop stop-opacity="1" stop-color="rgb(80.050659%, 67.169189%, 50.056458%)" offset="0.585938"/><stop stop-opacity="1" stop-color="rgb(80.426025%, 67.553711%, 50.370789%)" offset="0.59375"/><stop stop-opacity="1" stop-color="rgb(80.799866%, 67.939758%, 50.683594%)" offset="0.601563"/><stop stop-opacity="1" stop-color="rgb(81.173706%, 68.325806%, 50.997925%)" offset="0.609375"/><stop stop-opacity="1" stop-color="rgb(81.549072%, 68.711853%, 51.312256%)" offset="0.617188"/><stop stop-opacity="1" stop-color="rgb(81.922913%, 69.0979%, 51.626587%)" offset="0.625"/><stop stop-opacity="1" stop-color="rgb(82.298279%, 69.483948%, 51.939392%)" offset="0.632812"/><stop stop-opacity="1" stop-color="rgb(82.672119%, 69.869995%, 52.253723%)" offset="0.640625"/><stop stop-opacity="1" stop-color="rgb(83.045959%, 70.254517%, 52.568054%)" offset="0.648438"/><stop stop-opacity="1" stop-color="rgb(83.421326%, 70.640564%, 52.882385%)" offset="0.65625"/><stop stop-opacity="1" stop-color="rgb(83.795166%, 71.026611%, 53.196716%)" offset="0.664062"/><stop stop-opacity="1" stop-color="rgb(84.170532%, 71.412659%, 53.509521%)" offset="0.671875"/><stop stop-opacity="1" stop-color="rgb(84.544373%, 71.798706%, 53.823853%)" offset="0.679688"/><stop stop-opacity="1" stop-color="rgb(84.918213%, 72.184753%, 54.138184%)" offset="0.6875"/><stop stop-opacity="1" stop-color="rgb(85.293579%, 72.570801%, 54.452515%)" offset="0.695313"/><stop stop-opacity="1" stop-color="rgb(85.667419%, 72.956848%, 54.76532%)" offset="0.703125"/><stop stop-opacity="1" stop-color="rgb(86.042786%, 73.34137%, 55.079651%)" offset="0.710938"/><stop stop-opacity="1" stop-color="rgb(86.416626%, 73.727417%, 55.393982%)" offset="0.71875"/><stop stop-opacity="1" stop-color="rgb(86.791992%, 74.113464%, 55.708313%)" offset="0.726562"/><stop stop-opacity="1" stop-color="rgb(87.165833%, 74.499512%, 56.021118%)" offset="0.734375"/><stop stop-opacity="1" stop-color="rgb(87.539673%, 74.885559%, 56.335449%)" offset="0.742188"/><stop stop-opacity="1" stop-color="rgb(87.915039%, 75.271606%, 56.64978%)" offset="0.75"/><stop stop-opacity="1" stop-color="rgb(88.288879%, 75.657654%, 56.964111%)" offset="0.757813"/><stop stop-opacity="1" stop-color="rgb(88.664246%, 76.043701%, 57.278442%)" offset="0.765625"/><stop stop-opacity="1" stop-color="rgb(89.038086%, 76.428223%, 57.591248%)" offset="0.773438"/><stop stop-opacity="1" stop-color="rgb(89.411926%, 76.81427%, 57.905579%)" offset="0.78125"/><stop stop-opacity="1" stop-color="rgb(89.787292%, 77.200317%, 58.21991%)" offset="0.789062"/><stop stop-opacity="1" stop-color="rgb(90.161133%, 77.586365%, 58.534241%)" offset="0.796875"/><stop stop-opacity="1" stop-color="rgb(90.536499%, 77.972412%, 58.847046%)" offset="0.804688"/><stop stop-opacity="1" stop-color="rgb(90.85083%, 78.297424%, 59.111023%)" offset="0.8125"/><stop stop-opacity="1" stop-color="rgb(90.979004%, 78.42865%, 59.21936%)" offset="0.875"/><stop stop-opacity="1" stop-color="rgb(90.979004%, 78.42865%, 59.21936%)" offset="1"/></linearGradient></defs><g clip-path="url(#89e0b3d45b)"><g clip-path="url(#cb6a3a8508)"><path fill="url(#f820aeb687)" d="M 147.082031 349.339844 L 147.082031 477.125 L 271.328125 477.125 L 271.328125 349.339844 Z M 147.082031 349.339844 " fill-rule="nonzero"/></g></g><path fill="#ffffff" d="M 390.648438 348.878906 C 405.761719 348.101562 418.113281 357.371094 419.0625 372.917969 C 420.070312 389.441406 407.34375 401.414062 391.023438 400.550781 C 357.542969 398.738281 357.660156 350.578125 390.679688 348.90625 Z M 392.117188 359.53125 C 371.851562 359.90625 372.597656 391.597656 394.332031 389.726562 C 412.5 388.171875 411.808594 359.183594 392.117188 359.53125 Z M 392.117188 359.53125 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 326.023438 349.886719 L 326.023438 368.855469 L 345.425781 368.855469 C 345.367188 368.65625 345.625 368.398438 345.625 368.339844 L 345.625 350.203125 C 345.625 350.203125 345.367188 350.03125 345.425781 349.886719 L 356.910156 349.886719 L 356.910156 399.515625 L 345.425781 399.515625 L 345.425781 379.507812 L 326.023438 379.507812 L 326.023438 399.515625 L 314.765625 399.515625 L 314.765625 349.886719 Z M 326.023438 349.886719 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 439.097656 349.886719 L 439.097656 381.0625 C 439.097656 384.257812 441.746094 388.257812 444.828125 389.296875 C 451.359375 391.484375 458.070312 387.625 458.070312 380.429688 L 458.070312 349.886719 L 469.324219 349.886719 L 469.324219 381.496094 C 468.402344 395.6875 456.886719 402.683594 443.414062 400.089844 C 420.675781 395.714844 429.367188 366.957031 427.582031 350.605469 L 427.898438 349.886719 Z M 439.097656 349.886719 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 488.84375 383.652344 C 489.503906 384.488281 489.300781 385.523438 489.675781 386.5625 C 492.238281 393.816406 508.476562 392.40625 505.566406 384.230469 C 504.097656 380.113281 495.953125 379.191406 492.296875 378.125 C 484.09375 375.738281 477.585938 371.246094 478.566406 361.6875 C 480.003906 347.410156 501.855469 345.480469 510.980469 353.023438 C 514.691406 356.105469 516.246094 360.222656 516.535156 364.972656 C 516.507812 365.113281 516.046875 365.316406 515.988281 365.316406 L 505.96875 365.316406 C 505.480469 365.316406 505.222656 362.582031 504.847656 361.832031 C 502.054688 355.933594 488.410156 356.9375 489.648438 364.105469 C 490.394531 368.511719 498.746094 369.605469 502.285156 370.671875 C 510.75 373.261719 518.089844 376.859375 517.339844 387.109375 C 515.988281 405.761719 478.9375 405.417969 478.132812 385.035156 C 478.132812 384.546875 478.019531 383.96875 478.449219 383.683594 L 488.871094 383.683594 Z M 488.84375 383.652344 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 559.429688 349.886719 L 559.429688 358.953125 L 559.113281 359.269531 L 537.953125 359.269531 L 537.953125 369.691406 L 557.355469 369.691406 L 557.355469 379.078125 L 537.953125 379.078125 L 537.953125 389.902344 L 560.0625 389.902344 L 560.0625 399.515625 L 526.695312 399.515625 L 526.695312 349.886719 Z M 559.429688 349.886719 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 593.800781 378.789062 L 594.75 378.789062 C 609.890625 379.164062 609.058594 401.730469 593.511719 400.753906 C 579.550781 399.859375 579.578125 379.363281 593.800781 378.789062 Z M 593.339844 383.421875 C 589.597656 383.828125 587.554688 387.339844 588.042969 390.878906 C 589.078125 398.21875 600.25 397.902344 600.707031 390.359375 C 600.996094 385.8125 597.800781 382.933594 593.339844 383.421875 Z M 593.339844 383.421875 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 622.789062 379.21875 L 622.789062 383.566406 L 614.355469 383.566406 L 614.355469 388.808594 L 621.925781 388.808594 L 622.039062 388.949219 C 622.039062 388.949219 621.984375 389.007812 621.984375 389.035156 L 621.984375 393.066406 L 614.355469 393.066406 L 614.355469 400.320312 L 609.574219 400.320312 L 609.574219 379.21875 Z M 622.789062 379.21875 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 650.019531 429.742188 C 662.976562 442.265625 658.65625 466.1875 641.355469 472.492188 C 620.800781 480.003906 600.390625 464.488281 604.96875 442.351562 C 609.144531 422.085938 636 416.15625 650.050781 429.742188 Z M 630.445312 433.226562 C 610.207031 433.65625 611.101562 465.179688 632.664062 463.394531 C 650.882812 461.898438 650.394531 432.765625 630.445312 433.226562 Z M 630.445312 433.226562 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 416.703125 423.582031 L 440.394531 423.582031 C 455.9375 423.378906 462.414062 444.710938 450.8125 453.808594 C 450.035156 454.414062 448.023438 455.332031 447.589844 455.792969 C 447.476562 455.910156 447.332031 455.996094 447.359375 456.199219 L 457.378906 473.210938 L 444.25 473.210938 L 435.699219 457.78125 L 428.300781 457.78125 L 427.984375 458.097656 L 427.984375 473.210938 L 416.730469 473.210938 L 416.730469 423.582031 Z M 427.957031 448.195312 L 438.0625 448.195312 C 447.503906 448.195312 447.445312 433.167969 438.0625 433.167969 L 427.957031 433.167969 Z M 427.957031 448.195312 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 524.941406 423.582031 L 524.941406 453.921875 C 524.941406 461.175781 531.101562 465.035156 537.867188 463.105469 C 541.003906 462.214844 543.910156 458.183594 543.910156 454.988281 L 543.910156 423.609375 L 555.082031 423.609375 L 555.398438 424.328125 C 554.648438 435.039062 556.578125 447.359375 554.910156 457.867188 C 551.167969 481.558594 513.945312 479.140625 513.65625 455.015625 L 513.65625 423.609375 L 524.941406 423.609375 Z M 524.941406 423.582031 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 359.53125 473.210938 L 378.933594 423.898438 C 379.078125 423.582031 379.335938 423.582031 379.625 423.554688 C 382.90625 423.179688 386.878906 423.871094 390.246094 423.554688 L 409.992188 473.210938 L 397.988281 473.210938 L 394.421875 464.691406 L 375.046875 464.632812 L 371.304688 473.210938 Z M 377.695312 455.707031 L 391.65625 455.707031 L 384.863281 437.976562 L 377.667969 455.707031 Z M 377.695312 455.707031 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 598.175781 433.597656 L 578.6875 433.597656 C 578.6875 433.597656 578.371094 433.886719 578.167969 433.800781 L 578.167969 446.09375 L 596.015625 446.09375 L 596.332031 446.410156 L 596.332031 456.109375 L 578.195312 456.109375 L 578.195312 473.210938 L 566.941406 473.210938 L 566.941406 423.667969 L 598.234375 423.667969 L 598.234375 433.570312 Z M 598.175781 433.597656 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 356.421875 434.003906 L 340.789062 434.003906 L 340.789062 473.210938 L 329.621094 473.210938 L 329.304688 472.894531 L 329.304688 434.003906 L 313.671875 434.003906 L 313.671875 423.582031 L 355.902344 423.582031 C 355.902344 423.582031 356.132812 423.207031 356.421875 423.695312 L 356.421875 434.03125 Z M 356.421875 434.003906 " fill-opacity="1" fill-rule="nonzero"/><path fill="#ffffff" d="M 505.96875 423.582031 L 505.96875 434.003906 L 490.425781 434.003906 L 490.109375 434.320312 L 490.109375 473.210938 L 478.851562 473.210938 L 478.851562 434.320312 L 478.535156 434.003906 L 462.992188 434.003906 L 462.992188 423.667969 L 463.308594 423.410156 C 463.308594 423.410156 463.453125 423.582031 463.507812 423.582031 Z M 505.96875 423.582031 " fill-opacity="1" fill-rule="nonzero"/></svg>
+    </div>
+    <div class="slide-inner">
+      <div class="r eyebrow" data-i18n="s1-eyebrow">House of Tartufo — Selezione della Settimana</div>
+      <h1 class="r headline" data-i18n="s1-headline"><em>Oro</em> della<br>terra</h1>
+      <div class="r divider"></div>
+      <p class="r subline" data-i18n="s1-subline">Tartufi freschi raccolti <em>questa settimana</em>.<br>Spedizione in tutto il mondo.</p>
+      <div class="r expire-banner">
+        <span class="dot"></span>
+        <span id="expire-label" data-i18n="expire-text">Offerta settimanale in corso</span>
+      </div>
+      <div class="r" style="font-size:var(--sm);letter-spacing:.2em;color:rgba(201,168,76,.4);text-transform:uppercase" data-i18n="s1-scroll">Scorri per scoprire ›</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — PREZZI -->
+  <div class="slide" data-label-i18n="nav-1">
+    <div class="corner corner-tl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-tr"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-bl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-br"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="slide-inner">
+      <div class="r eyebrow" data-i18n="s2-eyebrow">Tartufi Freschi — Prezzi Settimanali</div>
+      <h2 class="r headline" style="font-size:var(--xl);margin-bottom:8px" data-i18n="s2-headline">Quotazione <em>Ufficiale</em></h2>
+      <div class="r divider"></div>
+      <div class="r cards-grid" id="cards-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 — TARTUFO NERO -->
+  <div class="slide" data-label-i18n="nav-2">
+    <div class="corner corner-tl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-tr"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-bl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-br"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="slide-inner">
+      <div id="detail-a-inner"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 — ESTIVO & BIANCHETTO -->
+  <div class="slide" data-label-i18n="nav-3">
+    <div class="corner corner-tl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-tr"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-bl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-br"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="slide-inner" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1000px">
+      <div id="detail-b-inner"></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 — SPEDIZIONE -->
+  <div class="slide" data-label-i18n="nav-4">
+    <div class="corner corner-tl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-tr"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-bl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-br"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="slide-inner">
+      <div class="r eyebrow" data-i18n="s5-eyebrow">Dalla Terra alla Tavola</div>
+      <h2 class="r headline" style="font-size:var(--xl);margin-bottom:8px" data-i18n="s5-headline">Spedizione <em>Mondiale</em></h2>
+      <div class="r divider"></div>
+      <div class="r shipping-grid">
+        <div class="ship-block">
+          <div class="sh-eyebrow" data-i18n="s5-fresh-eyebrow">🌍 Tartufi Freschi</div>
+          <div class="sh-title" data-i18n="s5-fresh-title">Spedizione Mondiale</div>
+          <div class="sh-time">1–2</div>
+          <div class="sh-unit" data-i18n="s5-fresh-unit">Giorni lavorativi · Fresh</div>
+        </div>
+        <div class="ship-block" style="border-left:none">
+          <div class="sh-eyebrow" data-i18n="s5-prod-eyebrow">📦 Prodotti al Tartufo</div>
+          <div class="sh-title" data-i18n="s5-prod-title">Ordini 24h/24h</div>
+          <div class="sh-time">4–5</div>
+          <div class="sh-unit" data-i18n="s5-prod-unit">Giorni lavorativi · Prodotti</div>
+        </div>
+      </div>
+      <p class="r body-text" style="margin-top:28px" data-i18n="s5-body">Ogni spedizione è garantita con packaging termico professionale per preservare l'integrità aromatica del tartufo fresco durante il trasporto.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 6 — CTA -->
+  <div class="slide" data-label-i18n="nav-5" id="s5">
+    <canvas id="cta-canvas"></canvas>
+    <div class="corner corner-tl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-tr"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-bl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-br"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="slide-inner">
+      <div class="r expire-banner">
+        <span class="dot"></span>
+        <span id="expire-label-cta" data-i18n="expire-text">Offerta settimanale in corso</span>
+      </div>
+      <h2 class="r headline" data-i18n="s6-headline">Ordina <em>Ora</em></h2>
+      <div class="r divider"></div>
+      <p class="r subline" style="font-size:var(--md)" data-i18n="s6-subline">I tartufi freschi vanno ordinati oggi.<br>Domani la selezione cambia. <em>Il profumo non aspetta.</em></p>
+      <div class="r cta-row">
+        <a href="https://houseoftartufo.com" target="_blank" rel="noopener noreferrer" class="btn-primary" data-i18n="s6-btn-site">Ordina sul Sito</a>
+        <a href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" class="btn-secondary" data-i18n="s6-btn-wa">Ordina su WhatsApp</a>
+      </div>
+      <div class="r" style="margin-top:40px;font-family:'Cormorant Garamond',serif;font-size:var(--md);color:rgba(201,168,76,.35);letter-spacing:.15em;font-style:italic">
+        House of Tartufo — Italian Truffles Selection
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 7 — CONTATTI ═══ -->
+  <div class="slide" data-label-i18n="nav-6">
+    <div class="corner corner-tl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-tr"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-bl"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="corner corner-br"><svg width="40" height="40"><path d="M0 40V0h40" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1"/><circle cx="0" cy="0" r="3" fill="rgba(201,168,76,.5)"/></svg></div>
+    <div class="slide-inner">
+      <div class="r eyebrow" data-i18n="s7-eyebrow">Siamo Ovunque</div>
+      <h2 class="r headline" style="font-size:var(--xl);margin-bottom:8px" data-i18n="s7-headline">Contattaci &amp; <em>Seguici</em></h2>
+      <div class="r divider"></div>
+
+      <!-- MAIN CONTACT CARDS -->
+      <div class="r contact-grid" style="pointer-events:auto">
+
+        <!-- Sito -->
+        <a href="https://houseoftartufo.com" target="_blank" rel="noopener noreferrer" class="contact-card">
+          <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
+          <div class="cc-info">
+            <div class="cc-label" data-i18n="s7-site-label">Sito Web</div>
+            <div class="cc-value">houseoftartufo.com</div>
+          </div>
+        </a>
+
+        <!-- Email -->
+        <a href="#" id="email-card" class="contact-card">
+          <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
+          <div class="cc-info">
+            <div class="cc-label" data-i18n="s7-email-label">Email</div>
+            <div class="cc-value" id="email-display">admin&#64;houseoftartufo.com</div>
+          </div>
+        </a>
+
+        <!-- WA Diretto -->
+        <a href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" class="contact-card">
+          <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.091.535 4.06 1.47 5.776L0 24l6.383-1.448A11.938 11.938 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.794 9.794 0 01-5.017-1.378l-.36-.214-3.732.846.88-3.614-.235-.373A9.794 9.794 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg></div>
+          <div class="cc-info">
+            <div class="cc-label" data-i18n="s7-wa-label">WhatsApp Diretto</div>
+            <div class="cc-value">+32 480 20 57 15</div>
+          </div>
+        </a>
+
+        <!-- WA Community -->
+        <a href="https://chat.whatsapp.com/CchIPg1kvsp0P3Ko9Qj8Ps" target="_blank" class="contact-card contact-card-full">
+          <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.091.535 4.06 1.47 5.776L0 24l6.383-1.448A11.938 11.938 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.794 9.794 0 01-5.017-1.378l-.36-.214-3.732.846.88-3.614-.235-.373A9.794 9.794 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg></div>
+          <div class="cc-info">
+            <div class="cc-label" data-i18n="s7-community-label">Community WhatsApp</div>
+            <div class="cc-value" data-i18n="s7-community-sub">Unisciti alla nostra community</div>
+          </div>
+        </a>
+
+      </div><!-- /contact-grid -->
+
+      <!-- SOCIAL ROW -->
+      <div class="r" style="font-size:9px;letter-spacing:.35em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;text-align:center" data-i18n="s7-social-label">Seguici sui Social</div>
+      <div class="r social-row" style="pointer-events:auto">
+
+        <a href="https://www.instagram.com/houseoftartufo/" target="_blank" rel="noopener noreferrer" class="social-btn">
+          <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          <span>Instagram</span>
+        </a>
+
+        <a href="https://www.facebook.com/p/House-of-Tartufo-61572843099333/" target="_blank" rel="noopener noreferrer" class="social-btn">
+          <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          <span>Facebook</span>
+        </a>
+
+        <a href="https://be.linkedin.com/company/house-of-tartufo" target="_blank" rel="noopener noreferrer" class="social-btn">
+          <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          <span>LinkedIn</span>
+        </a>
+
+        <a href="https://www.tiktok.com/@houseoftartufo" target="_blank" rel="noopener noreferrer" class="social-btn">
+          <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+          <span>TikTok</span>
+        </a>
+
+        <a href="https://x.com/houseoftartufo" target="_blank" rel="noopener noreferrer" class="social-btn">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span>X</span>
+        </a>
+
+      </div><!-- /social-row -->
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  GOOGLE SHEETS CONFIG
+//  1. Crea foglio con colonne: A=chiave, B=valore
+//  2. Pubblica come CSV (File → Condividi → Pubblica sul web)
+//  3. Incolla URL qui sotto
+// ═══════════════════════════════════════════════════════════
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQkO5iIBnRqk2cMtPnVgRqdXiMrRXycIAT5JYKgoaBeRXpcxHtGpK8KaWX2DWVNqrH25kPWoQPXx0FE/pub?output=csv';
+
+// ═══════════════════════════════════════════════════════════
+//  TRANSLATIONS
+// ═══════════════════════════════════════════════════════════
+const T = {
+  it: {
+    'loader-sub':         'Weekly Italian Truffles Selection',
+    'nav-0':              'Selezione',
+    'nav-1':              'Prezzi',
+    'nav-2':              'Tartufo Nero',
+    'nav-3':              'Estivo & Bianchetto',
+    'nav-4':              'Spedizione',
+    'nav-5':              'Ordina',
+    'expire-text':        'Offerta settimanale in corso',
+    's1-eyebrow':         'House of Tartufo — Selezione della Settimana',
+    's1-headline':        '<em>Oro</em> della<br>terra',
+    's1-subline':         'Tartufi freschi raccolti <em>questa settimana</em>.<br>Spedizione in tutto il mondo.',
+    's1-scroll':          'Scorri per scoprire ›',
+    's2-eyebrow':         'Tartufi Freschi — Prezzi Settimanali',
+    's2-headline':        'Quotazione <em>Ufficiale</em>',
+    'badge-premium':      'Premium',
+    'quality-sup-15':     '15g+ · Qualità Superior',
+    'quality-std-15':     '-15g · Qualità Standard',
+    'quality-bian':       '8g+ · Unica qualità',
+    'quality-sup-15-short':'15g+ · Superior',
+    'quality-std-15-short':'-15g · Standard',
+    'quality-bian-short': '8g+ · Qualità Unica',
+    's3-eyebrow':         'Il Re dei Tartufi',
+    's3-body':            'Il "diamante nero" della cucina italiana. Profumo intenso, terroso, inconfondibile. Raccolto fresco questa settimana e spedito direttamente dalla foresta alla tua cucina.',
+    's3-badge':           'Spedizione Mondiale · 1–2 Giorni Lavorativi',
+    's3-sup-label':       'Qualità Superior (15g+)',
+    's3-sup-tag':         '15g+ per pezzo',
+    's3-std-label':       'Qualità Standard (-15g)',
+    's4-est-eyebrow':     'Profumo Delicato',
+    's4-bian-eyebrow':    'Aroma Agliato Unico',
+    's4-bian-note':       'Un solo livello di qualità — il migliore.',
+    's5-eyebrow':         'Dalla Terra alla Tavola',
+    's5-headline':        'Spedizione <em>Mondiale</em>',
+    's5-fresh-eyebrow':   '🌍 Tartufi Freschi',
+    's5-fresh-title':     'Spedizione Mondiale',
+    's5-fresh-unit':      'Giorni lavorativi · Fresh',
+    's5-prod-eyebrow':    '📦 Prodotti al Tartufo',
+    's5-prod-title':      'Ordini 24h/24h',
+    's5-prod-unit':       'Giorni lavorativi · Prodotti',
+    's5-body':            'Ogni spedizione è garantita con packaging termico professionale per preservare l\'integrità aromatica del tartufo fresco durante il trasporto.',
+    's6-headline':        'Ordina <em>Ora</em>',
+    's6-subline':         'I tartufi freschi vanno ordinati oggi.<br>Domani la selezione cambia. <em>Il profumo non aspetta.</em>',
+    's6-btn-site':        'Ordina sul Sito',
+    's6-btn-wa':          'Ordina su WhatsApp',
+    'nav-6':              'Contatti',
+    's7-eyebrow':         'Siamo Ovunque',
+    's7-headline':        'Contattaci &amp; <em>Seguici</em>',
+    's7-wa-label':        'WhatsApp Diretto',
+    's7-community-label': 'Community WhatsApp',
+    's7-community-sub':   'Unisciti alla nostra community',
+    's7-social-label':    'Seguici sui Social',
+    's7-site-label':      'Sito Web',
+    's7-email-label':     'Email',
+  },
+  en: {
+    'loader-sub':         'Weekly Italian Truffles Selection',
+    'nav-0':              'Selection',
+    'nav-1':              'Prices',
+    'nav-2':              'Black Truffle',
+    'nav-3':              'Summer & Bianchetto',
+    'nav-4':              'Shipping',
+    'nav-5':              'Order',
+    'expire-text':        'Weekly offer in progress',
+    's1-eyebrow':         'House of Tartufo — Weekly Selection',
+    's1-headline':        '<em>Gold</em> of<br>the earth',
+    's1-subline':         'Fresh truffles harvested <em>this week</em>.<br>Worldwide shipping available.',
+    's1-scroll':          'Scroll to discover ›',
+    's2-eyebrow':         'Fresh Truffles — Weekly Prices',
+    's2-headline':        'Official <em>Quotation</em>',
+    'badge-premium':      'Premium',
+    'quality-sup-15':     '15g+ · Superior Quality',
+    'quality-std-15':     '-15g · Standard Quality',
+    'quality-bian':       '8g+ · Single grade',
+    'quality-sup-15-short':'15g+ · Superior',
+    'quality-std-15-short':'-15g · Standard',
+    'quality-bian-short': '8g+ · Single Grade',
+    's3-eyebrow':         'The King of Truffles',
+    's3-body':            'The "black diamond" of Italian cuisine. Intense, earthy, unmistakable aroma. Harvested fresh this week and shipped directly from the forest to your kitchen.',
+    's3-badge':           'Worldwide Shipping · 1–2 Working Days',
+    's3-sup-label':       'Superior Quality (15g+)',
+    's3-sup-tag':         '15g+ per piece',
+    's3-std-label':       'Standard Quality (-15g)',
+    's4-est-eyebrow':     'Delicate Fragrance',
+    's4-bian-eyebrow':    'Unique Garlic Aroma',
+    's4-bian-note':       'One single grade — the finest.',
+    's5-eyebrow':         'From the Earth to Your Table',
+    's5-headline':        '<em>Worldwide</em> Shipping',
+    's5-fresh-eyebrow':   '🌍 Fresh Truffles',
+    's5-fresh-title':     'Worldwide Shipping',
+    's5-fresh-unit':      'Working days · Fresh',
+    's5-prod-eyebrow':    '📦 Truffle Products',
+    's5-prod-title':      'Orders 24h/24h',
+    's5-prod-unit':       'Working days · Products',
+    's5-body':            'Every shipment is guaranteed with professional thermal packaging to preserve the aromatic integrity of fresh truffles during transit.',
+    's6-headline':        'Order <em>Now</em>',
+    's6-subline':         'Fresh truffles must be ordered today.<br>Tomorrow the selection changes. <em>The aroma won\'t wait.</em>',
+    's6-btn-site':        'Order on Website',
+    's6-btn-wa':          'Order on WhatsApp',
+    'nav-6':              'Contact',
+    's7-eyebrow':         'Find Us Everywhere',
+    's7-headline':        'Contact &amp; <em>Follow Us</em>',
+    's7-wa-label':        'Direct WhatsApp',
+    's7-community-label': 'WhatsApp Community',
+    's7-community-sub':   'Join our community',
+    's7-social-label':    'Follow Us',
+    's7-site-label':      'Website',
+    's7-email-label':     'Email',
+  },
+  fr: {
+    'loader-sub':         'Sélection Hebdomadaire de Truffes Italiennes',
+    'nav-0':              'Sélection',
+    'nav-1':              'Prix',
+    'nav-2':              'Truffe Noire',
+    'nav-3':              'Estive & Bianchetto',
+    'nav-4':              'Livraison',
+    'nav-5':              'Commander',
+    'expire-text':        'Offre hebdomadaire en cours',
+    's1-eyebrow':         'House of Tartufo — Sélection de la Semaine',
+    's1-headline':        "<em>Or</em> de<br>la terre",
+    's1-subline':         'Truffes fraîches récoltées <em>cette semaine</em>.<br>Livraison dans le monde entier.',
+    's1-scroll':          'Défiler pour découvrir ›',
+    's2-eyebrow':         'Truffes Fraîches — Prix Hebdomadaires',
+    's2-headline':        'Cotation <em>Officielle</em>',
+    'badge-premium':      'Premium',
+    'quality-sup-15':     '15g+ · Qualité Supérieure',
+    'quality-std-15':     '-15g · Qualité Standard',
+    'quality-bian':       '8g+ · Qualité unique',
+    'quality-sup-15-short':'15g+ · Supérieure',
+    'quality-std-15-short':'-15g · Standard',
+    'quality-bian-short': '8g+ · Qualité Unique',
+    's3-eyebrow':         'Le Roi des Truffes',
+    's3-body':            'Le "diamant noir" de la cuisine italienne. Parfum intense, terreux, inimitable. Récolté frais cette semaine et expédié directement de la forêt à votre cuisine.',
+    's3-badge':           'Livraison Mondiale · 1–2 Jours Ouvrés',
+    's3-sup-label':       'Qualité Supérieure (15g+)',
+    's3-sup-tag':         '15g+ par pièce',
+    's3-std-label':       'Qualité Standard (-15g)',
+    's4-est-eyebrow':     'Parfum Délicat',
+    's4-bian-eyebrow':    'Arôme d\'Ail Unique',
+    's4-bian-note':       'Un seul niveau de qualité — le meilleur.',
+    's5-eyebrow':         'De la Terre à la Table',
+    's5-headline':        'Livraison <em>Mondiale</em>',
+    's5-fresh-eyebrow':   '🌍 Truffes Fraîches',
+    's5-fresh-title':     'Livraison Mondiale',
+    's5-fresh-unit':      'Jours ouvrés · Frais',
+    's5-prod-eyebrow':    '📦 Produits à la Truffe',
+    's5-prod-title':      'Commandes 24h/24h',
+    's5-prod-unit':       'Jours ouvrés · Produits',
+    's5-body':            'Chaque envoi est garanti avec un emballage thermique professionnel pour préserver l\'intégrité aromatique de la truffe fraîche pendant le transport.',
+    's6-headline':        'Commandez <em>Maintenant</em>',
+    's6-subline':         'Les truffes fraîches doivent être commandées aujourd\'hui.<br>Demain la sélection change. <em>Le parfum n\'attend pas.</em>',
+    's6-btn-site':        'Commander sur le Site',
+    's6-btn-wa':          'Commander sur WhatsApp',
+    'nav-6':              'Contact',
+    's7-eyebrow':         'Retrouvez-nous Partout',
+    's7-headline':        'Contactez &amp; <em>Suivez-nous</em>',
+    's7-wa-label':        'WhatsApp Direct',
+    's7-community-label': 'Communauté WhatsApp',
+    's7-community-sub':   'Rejoignez notre communauté',
+    's7-social-label':    'Suivez-nous',
+    's7-site-label':      'Site Web',
+    's7-email-label':     'E-mail',
+  },
+  nl: {
+    'loader-sub':         'Wekelijkse Italiaanse Truffelselectie',
+    'nav-0':              'Selectie',
+    'nav-1':              'Prijzen',
+    'nav-2':              'Zwarte Truffel',
+    'nav-3':              'Zomer & Bianchetto',
+    'nav-4':              'Verzending',
+    'nav-5':              'Bestellen',
+    'expire-text':        'Wekelijkse aanbieding loopt',
+    's1-eyebrow':         'House of Tartufo — Selectie van de Week',
+    's1-headline':        '<em>Goud</em> van<br>de aarde',
+    's1-subline':         'Verse truffels geoogst <em>deze week</em>.<br>Wereldwijde verzending beschikbaar.',
+    's1-scroll':          'Scroll om te ontdekken ›',
+    's2-eyebrow':         'Verse Truffels — Wekelijkse Prijzen',
+    's2-headline':        'Officiële <em>Notering</em>',
+    'badge-premium':      'Premium',
+    'quality-sup-15':     '15g+ · Superieure Kwaliteit',
+    'quality-std-15':     '-15g · Standaard Kwaliteit',
+    'quality-bian':       '8g+ · Enige kwaliteit',
+    'quality-sup-15-short':'15g+ · Superieur',
+    'quality-std-15-short':'-15g · Standaard',
+    'quality-bian-short': '8g+ · Enige Kwaliteit',
+    's3-eyebrow':         'De Koning der Truffels',
+    's3-body':            'De "zwarte diamant" van de Italiaanse keuken. Intens, aards, onmiskenbaar aroma. Deze week vers geoogst en rechtstreeks vanuit het bos naar uw keuken verzonden.',
+    's3-badge':           'Wereldwijde Verzending · 1–2 Werkdagen',
+    's3-sup-label':       'Superieure Kwaliteit (15g+)',
+    's3-sup-tag':         '15g+ per stuk',
+    's3-std-label':       'Standaard Kwaliteit (-15g)',
+    's4-est-eyebrow':     'Delicate Geur',
+    's4-bian-eyebrow':    'Uniek Knoflookaroma',
+    's4-bian-note':       'Één kwaliteitsniveau — het beste.',
+    's5-eyebrow':         'Van de Aarde tot de Tafel',
+    's5-headline':        '<em>Wereldwijde</em> Verzending',
+    's5-fresh-eyebrow':   '🌍 Verse Truffels',
+    's5-fresh-title':     'Wereldwijde Verzending',
+    's5-fresh-unit':      'Werkdagen · Vers',
+    's5-prod-eyebrow':    '📦 Truffelproducten',
+    's5-prod-title':      'Bestellingen 24u/24u',
+    's5-prod-unit':       'Werkdagen · Producten',
+    's5-body':            'Elke zending wordt gegarandeerd met professionele thermische verpakking om de aromatische integriteit van verse truffels tijdens transport te bewaren.',
+    's6-headline':        'Bestel <em>Nu</em>',
+    's6-subline':         'Verse truffels moeten vandaag besteld worden.<br>Morgen verandert de selectie. <em>Het aroma wacht niet.</em>',
+    's6-btn-site':        'Bestellen op de Website',
+    's6-btn-wa':          'Bestellen via WhatsApp',
+    'nav-6':              'Contact',
+    's7-eyebrow':         'Vind Ons Overal',
+    's7-headline':        'Contacteer &amp; <em>Volg Ons</em>',
+    's7-wa-label':        'Directe WhatsApp',
+    's7-community-label': 'WhatsApp Community',
+    's7-community-sub':   'Word lid van onze community',
+    's7-social-label':    'Volg Ons',
+    's7-site-label':      'Website',
+    's7-email-label':     'E-mail',
+  }
+};
+
+// ── LANGUAGE ENGINE ──────────────────────────────────────────
+let currentLang = 'it';
+
+function applyLang(lang){
+  currentLang = lang;
+  const dict = T[lang];
+
+  // Update all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if(dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+
+  // Update slide labels (data-label-i18n)
+  document.querySelectorAll('[data-label-i18n]').forEach((slide, i) => {
+    const key = slide.getAttribute('data-label-i18n');
+    if(dict[key]) slide.setAttribute('data-label', dict[key]);
+  });
+
+  // Refresh current nav label
+  const activeSlide = document.querySelector('.slide.active');
+  if(activeSlide){
+    const lbl = activeSlide.getAttribute('data-label');
+    if(lbl) document.getElementById('slide-label').textContent = lbl;
+  }
+
+  // Update lang buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  // html lang attribute + page title
+  document.documentElement.lang = lang;
+  const titles = {
+    it: 'House of Tartufo — Selezione Settimanale',
+    en: 'House of Tartufo — Weekly Selection',
+    fr: 'House of Tartufo — Sélection Hebdomadaire',
+    nl: 'House of Tartufo — Wekelijkse Selectie'
+  };
+  document.title = titles[lang] || titles.it;
+
+  // Ricarica prezzi e testi nella nuova lingua
+  loadPrices();
+}
+
+// Bind lang buttons
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+});
+
+// ── CURSOR ───────────────────────────────────────────────────
+const dot = document.getElementById('cursor-dot');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+(function lerp(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(lerp)})();
+
+// ── LOADER ───────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  const l=document.getElementById('loader');
+  const brand=l.querySelector('.loader-brand');
+  const sub=l.querySelector('.loader-sub');
+  const line=l.querySelector('.loader-line');
+  setTimeout(()=>{brand.classList.add('vis');line.classList.add('vis');},100);
+  setTimeout(()=>sub.classList.add('vis'),400);
+  setTimeout(()=>{l.classList.add('out');setTimeout(()=>l.remove(),900);},2200);
+});
+
+// ── SLIDES ENGINE (dynamic — supporta slide-inactive) ────────
+const allSlides = Array.from(document.querySelectorAll('.slide'));
+let activeSlides = Array.from(document.querySelectorAll('.slide:not(.slide-inactive)'));
+let total = activeSlides.length;
+let current = 0, locked = false;
+
+function goTo(n){
+  if(n===current||locked) return;
+  locked=true;
+  activeSlides[current]?.classList.remove('active');
+  current=Math.max(0,Math.min(n,total-1));
+  activeSlides[current]?.classList.add('active');
+  updateUI();
+  setTimeout(()=>locked=false,1050);
+  // CTA canvas — slide index 5 nel DOM originale
+  const domIdx = allSlides.indexOf(activeSlides[current]);
+  if(domIdx===5) initCtaCanvas();
+}
+
+function updateUI(){
+  const pct = Math.round(((current+1)/total)*100);
+  document.getElementById('progress').style.width = pct+'%';
+  document.getElementById('slide-counter').textContent=(String(current+1).padStart(2,'0'))+' — '+(String(total).padStart(2,'0'));
+  const lbl = activeSlides[current]?.getAttribute('data-label') || T[currentLang]['nav-'+current] || '';
+  document.getElementById('slide-label').textContent = lbl;
+  document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===current));
+}
+
+function rebuildNavigation(){
+  activeSlides = Array.from(document.querySelectorAll('.slide:not(.slide-inactive)'));
+  total = activeSlides.length;
+  if(current>=total) current=0;
+  const navEl=document.getElementById('nav');
+  if(!navEl) return;
+  navEl.innerHTML='';
+  activeSlides.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='nav-dot'+(i===current?' active':'');
+    d.addEventListener('click',()=>goTo(i));
+    navEl.appendChild(d);
+  });
+  updateUI();
+}
+
+// Build initial nav
+rebuildNavigation();
+
+// Set initial data-label from translations
+allSlides.forEach((s,i)=>{
+  const key=s.getAttribute('data-label-i18n');
+  if(key&&T.it[key]) s.setAttribute('data-label',T.it[key]);
+});
+updateUI();
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){goTo(current+1);e.preventDefault();}
+  if(e.key==='ArrowLeft') goTo(current-1);
+  if(e.key==='Escape') goTo(0);
+});
+let tsx=0,tsy=0;
+document.addEventListener('touchstart',e=>{tsx=e.touches[0].clientX;tsy=e.touches[0].clientY},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tsx;
+  const dy=Math.abs(e.changedTouches[0].clientY-tsy);
+  if(Math.abs(dx)>44&&dy<Math.abs(dx)*0.6) dx<0?goTo(current+1):goTo(current-1);
+});
+
+// ── GOOGLE SHEETS — PARSING ──────────────────────────────────
+function parseCSV(csv){
+  const rows=csv.trim().split('\n').slice(1);
+  const data={};
+  const langCol={it:1,en:2,fr:3,nl:4};
+  const col=langCol[currentLang]||1;
+  rows.forEach(row=>{
+    const cols=[];let cur='',inQ=false;
+    for(const ch of row){
+      if(ch==='"')inQ=!inQ;
+      else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}
+      else cur+=ch;
+    }
+    cols.push(cur.trim());
+    const key=(cols[0]||'').toLowerCase().trim();
+    const val=(cols[col]||cols[1]||'').trim();
+    if(key&&val) data[key]=val;
+  });
+  return data;
+}
+
+// ── ETICHETTE UI PER OGNI LINGUA ─────────────────────────────
+const UI_LABELS={
+  it:{sup_label:'Qualità Superior',std_label:'Qualità Standard',sup_tag:'per pezzo',badge_def:'Selezionato',eyebrow:'Eccellenza Italiana',ship:'Spedizione Mondiale · 1–2 Giorni',q_sup:'Prima scelta',q_std:'Seconda scelta'},
+  en:{sup_label:'Superior Quality',std_label:'Standard Quality',sup_tag:'per piece',badge_def:'Selected',eyebrow:'Italian Excellence',ship:'Worldwide Shipping · 1–2 Days',q_sup:'First choice',q_std:'Second choice'},
+  fr:{sup_label:'Qualité Supérieure',std_label:'Qualité Standard',sup_tag:'par pièce',badge_def:'Sélectionné',eyebrow:'Excellence Italienne',ship:'Livraison Mondiale · 1–2 Jours',q_sup:'Premier choix',q_std:'Deuxième choix'},
+  nl:{sup_label:'Superieure Kwaliteit',std_label:'Standaard Kwaliteit',sup_tag:'per stuk',badge_def:'Geselecteerd',eyebrow:'Italiaanse Kwaliteit',ship:'Wereldwijde Verzending · 1–2 Dagen',q_sup:'Eerste keuze',q_std:'Tweede keuze'}
+};
+
+// ── DYNAMIC PRODUCT RENDERING ────────────────────────────────
+function renderFromSheet(data){
+  const lbl=UI_LABELS[currentLang]||UI_LABELS.it;
+
+  // Estrai tartufi attivi t1→t4
+  const truffles=[];
+  for(let i=1;i<=4;i++){
+    const k=`t${i}`;
+    const attivo=(data[`${k}-attivo`]||'si').toLowerCase().trim();
+    if(!['si','yes','oui','ja','1','true'].includes(attivo)) continue;
+    const nome=data[`${k}-nome`]||'';
+    if(!nome) continue;
+    truffles.push({
+      nome,
+      latin:   data[`${k}-latin`]    || '',
+      prima:   data[`${k}-prima`]    || '',
+      standard:data[`${k}-standard`] || '',
+      badge:   data[`${k}-badge`]    || '',   // empty = nessun badge
+      desc:    data[`${k}-desc`]     || '',
+      unit:    data[`${k}-unit`]     || '',   // opzionale: etichetta unità
+    });
+  }
+  if(!truffles.length) return;
+  const count=truffles.length;
+
+  // SLIDE 2 — cards grid adattivo
+  const grid=document.getElementById('cards-container');
+  if(grid){
+    grid.setAttribute('data-count',count);
+    grid.innerHTML=truffles.map(t=>`
+      <div class="card">
+        ${t.badge ? `<div class="card-badge">${t.badge}</div>` : ''}
+        <div class="card-name">${t.nome}</div>
+        <div class="card-latin">${t.latin}</div>
+        <div class="card-price-block">
+          <div class="card-price">${cleanPrice(t.prima)}<span style="font-size:.55em;font-weight:300">/kg</span></div>
+          <div class="card-quality">${lbl.q_sup}</div>
+        </div>
+        ${t.standard ? `<div class="card-price-alt">${cleanPrice(t.standard)}<span style="font-size:.55em">/kg</span></div><div class="card-quality-alt">${lbl.q_std}</div>` : ''}
+      </div>`).join('');
+  }
+
+  // Helper: pulisce il prezzo rimuovendo /kg finale se già presente
+  // (evita il doppio /kg quando il valore nello sheet include già l'unità)
+  function cleanPrice(p){ return (p||'').replace(/\/kg\s*$/i,'').trim(); }
+
+  // Helper: vista singola prodotto (grande)
+  function singleDetailHTML(t){
+    const p1 = cleanPrice(t.prima);
+    const p2 = cleanPrice(t.standard);
+    // unit label: opzionale dal CSV (t.unit), altrimenti vuoto
+    const unitLabel = t.unit || '';
+    return `<div class="product-single">
+      <div>
+        <div class="r eyebrow">${lbl.eyebrow}</div>
+        <h2 class="r headline" style="font-size:var(--xl);text-align:left">${t.nome}<br><em>${t.latin}</em></h2>
+        <div class="r divider" style="margin:24px 0"></div>
+        <p class="r body-text" style="text-align:left;max-width:100%">${t.desc}</p>
+        <div class="r product-badge" style="display:block;margin-top:20px">${lbl.ship}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="r eyebrow" style="text-align:right">${lbl.sup_label}</div>
+        <div class="r price-display">${p1}<span style="font-size:.4em;color:var(--text)">/kg</span></div>
+        ${unitLabel ? `<div class="r quality-tag">${unitLabel}</div>` : ''}
+        ${p2 ? `<div class="r" style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(201,168,76,.12)">
+          <div class="eyebrow" style="text-align:right">${lbl.std_label}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,60px);font-weight:300;color:var(--text);line-height:1">${p2}<span style="font-size:.4em">/kg</span></div>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  // Helper: colonne affiancate (2-3 prodotti)
+  function multiDetailHTML(arr){
+    const cols = arr.length;
+    // Con 2 colonne: centrate con max-width bilanciato
+    // Con 3 colonne: più compatte
+    const colsHtml = arr.map((t, idx) => {
+      const p1 = cleanPrice(t.prima);
+      const p2 = cleanPrice(t.standard);
+      const showBadge = t.badge && t.badge.trim() !== '';
+      return `
+      <div class="detail-col r" ${idx > 0 ? 'style="border-left:1px solid rgba(201,168,76,.12);padding-left:28px"' : ''}>
+        ${showBadge ? `<div class="eyebrow" style="margin-bottom:10px">${t.badge}</div>` : '<div style="height:26px"></div>'}
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.5vw,36px);font-weight:300;color:var(--cream);line-height:1.1;margin-bottom:8px">${t.nome}<br><em style="color:var(--gold)">${t.latin}</em></h3>
+        <div class="divider" style="margin:16px 0;width:40px"></div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(26px,3.5vw,52px);color:var(--gold);font-weight:300;line-height:1">${p1}<span style="font-size:.4em;color:var(--text)">/kg</span></div>
+        <div style="font-size:var(--sm);color:var(--text);letter-spacing:.15em;opacity:.5;margin-top:4px;margin-bottom:12px">${lbl.q_sup}</div>
+        ${p2 ? `
+        <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.5vw,32px);color:var(--text);font-weight:300;padding-top:12px;border-top:1px solid rgba(201,168,76,.1)">${p2}<span style="font-size:.4em">/kg</span></div>
+        <div style="font-size:var(--sm);color:var(--text);letter-spacing:.15em;opacity:.35;margin-top:2px">${lbl.q_std}</div>` : ''}
+        ${t.desc ? `<p style="font-family:'Cormorant Garamond',serif;font-size:var(--md);color:var(--text);opacity:.45;font-style:italic;margin-top:14px;line-height:1.5">${t.desc}</p>` : ''}
+      </div>`;
+    }).join('');
+    return `<div class="detail-grid" data-cols="${cols}" style="align-items:start">${colsHtml}</div>`;
+  }
+
+  // SLIDE 3 — T1 dettaglio completo
+  const dA=document.getElementById('detail-a-inner');
+  const slideA=allSlides[2];
+  if(dA&&slideA){
+    dA.innerHTML=singleDetailHTML(truffles[0]);
+    slideA.setAttribute('data-label',truffles[0].nome);
+    slideA.classList.remove('slide-inactive');
+  }
+
+  // SLIDE 4 — tartufi rimanenti (T2, T3, T4)
+  const dB=document.getElementById('detail-b-inner');
+  const slideB=allSlides[3];
+  const rest=truffles.slice(1);
+  if(dB&&slideB){
+    if(rest.length===0){
+      slideB.classList.add('slide-inactive');
+    } else {
+      dB.innerHTML=rest.length===1?singleDetailHTML(rest[0]):multiDetailHTML(rest);
+      slideB.setAttribute('data-label',rest.map(t=>t.nome.split(' ').pop()).join(' & '));
+      slideB.classList.remove('slide-inactive');
+    }
+  }
+
+  // Ricostruisci navigazione
+  rebuildNavigation();
+}
+
+async function loadPrices(){
+  if(SHEET_CSV_URL==='INCOLLA_QUI_LURL_DEL_TUO_FOGLIO_CSV') return;
+  try{
+    const res=await fetch(SHEET_CSV_URL+'&t='+Date.now()+'&r='+Math.random(),{
+      cache:'no-store',
+      headers:{'Cache-Control':'no-cache, no-store, must-revalidate','Pragma':'no-cache'}
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=parseCSV(await res.text());
+    // Banner scadenza
+    if(data['week-label']){
+      document.querySelectorAll('[data-i18n="expire-text"]').forEach(el=>el.textContent=data['week-label']);
+    }
+    // Render prodotti
+    renderFromSheet(data);
+    // Indicatore aggiornamento
+    const status=document.getElementById('price-status');
+    const now=new Date();
+    document.getElementById('ps-text').textContent=now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    status.classList.add('visible');
+    setTimeout(()=>status.classList.remove('visible'),4000);
+  }catch(err){console.warn('Prices fetch failed:',err.message);}
+}
+loadPrices();
+setInterval(loadPrices, 2*60*1000); // refresh ogni 2 minuti
+
+// ── BG CANVAS ────────────────────────────────────────────────
+(function(){
+  const c=document.getElementById('bg-canvas');
+  const ctx=c.getContext('2d');
+  function resize(){c.width=innerWidth;c.height=innerHeight}
+  resize();window.addEventListener('resize',resize);
+  const pool=[];
+  for(let i=0;i<120;i++) pool.push(mkP());
+  function mkP(){return{x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.8+.3,vx:(Math.random()-.5)*.12,vy:-Math.random()*.25-.05,life:Math.random(),speed:Math.random()*.003+.001};}
+  function animate(){
+    requestAnimationFrame(animate);ctx.clearRect(0,0,c.width,c.height);
+    for(let p of pool){p.life+=p.speed;if(p.life>1){Object.assign(p,mkP(),{life:0,y:innerHeight+10})}const a=Math.sin(p.life*Math.PI)*.35;p.x+=p.vx;p.y+=p.vy;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(201,168,76,${a})`;ctx.fill();}
+  }
+  animate();
+})();
+
+// ── COVER CANVAS ─────────────────────────────────────────────
+(function(){
+  const c=document.getElementById('cover-canvas');
+  c.style.cssText='position:absolute;inset:0;z-index:0;pointer-events:none';
+  const ctx=c.getContext('2d');
+  function resize(){c.width=innerWidth;c.height=innerHeight}
+  resize();window.addEventListener('resize',resize);
+  const dust=[];
+  for(let i=0;i<280;i++) dust.push(mkDust());
+  function mkDust(){return{x:Math.random()*innerWidth,y:innerHeight+Math.random()*200,r:Math.random()*2.5+.5,vx:(Math.random()-.5)*.4,vy:-Math.random()*.8-.2,spin:Math.random()*Math.PI*2,dSpin:(Math.random()-.5)*.02,life:0,speed:Math.random()*.005+.002};}
+  const blobs=[];
+  for(let i=0;i<6;i++) blobs.push({x:Math.random()*innerWidth,y:innerHeight*.4+Math.random()*innerHeight*.3,r:Math.random()*180+80,phase:Math.random()*Math.PI*2,spd:Math.random()*.003+.001,life:Math.random()});
+  let mouseX=innerWidth/2,mouseY=innerHeight/2;
+  document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
+  function animate(){
+    requestAnimationFrame(animate);ctx.clearRect(0,0,c.width,c.height);
+    for(let b of blobs){b.life+=b.spd;b.phase+=.004;if(b.life>1){b.life=0;b.x=Math.random()*innerWidth;b.y=innerHeight*.5+Math.random()*200}const a=Math.sin(b.life*Math.PI)*.08;const rx=b.r*(1+.15*Math.sin(b.phase));const ry=b.r*(1+.15*Math.cos(b.phase*.7));const grd=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,rx);grd.addColorStop(0,`rgba(139,94,60,${a})`);grd.addColorStop(.6,`rgba(100,70,40,${a*.5})`);grd.addColorStop(1,'rgba(0,0,0,0)');ctx.save();ctx.scale(1,ry/rx);ctx.beginPath();ctx.arc(b.x,b.y*(rx/ry),rx,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();ctx.restore();}
+    const mg=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,220);mg.addColorStop(0,'rgba(201,168,76,.06)');mg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=mg;ctx.fillRect(0,0,c.width,c.height);
+    for(let p of dust){p.life+=p.speed;if(p.life>1){Object.assign(p,mkDust(),{life:0})}const a=Math.sin(p.life*Math.PI)*.7;p.x+=p.vx;p.y+=p.vy;p.spin+=p.dSpin;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.spin);ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);const hue=Math.random()>.5?'201,168,76':'232,201,122';ctx.fillStyle=`rgba(${hue},${a})`;ctx.fill();ctx.restore();}
+  }
+  animate();
+})();
+
+// ── CTA CANVAS ───────────────────────────────────────────────
+let ctaInited=false;
+function initCtaCanvas(){
+  if(ctaInited)return;ctaInited=true;
+  const c=document.getElementById('cta-canvas');
+  c.style.cssText='position:absolute;inset:0;z-index:0;pointer-events:none';
+  const ctx=c.getContext('2d');
+  function resize(){c.width=innerWidth;c.height=innerHeight}
+  resize();window.addEventListener('resize',resize);
+  const parts=[];
+  function emit(){const cx=innerWidth/2,cy=innerHeight*.7;for(let i=0;i<8;i++){const ang=(Math.random()-.5)*Math.PI*.8-Math.PI/2;const spd=Math.random()*4+1;parts.push({x:cx,y:cy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,r:Math.random()*2+.5,life:0,speed:Math.random()*.012+.006});}}
+  setInterval(emit,80);
+  const rings=[];setInterval(()=>rings.push({r:0,a:.6}),1200);
+  function animate(){
+    requestAnimationFrame(animate);ctx.clearRect(0,0,c.width,c.height);
+    const cx=innerWidth/2,cy=innerHeight*.7;
+    for(let i=rings.length-1;i>=0;i--){const rg=rings[i];rg.r+=1.8;rg.a-=.007;if(rg.a<=0){rings.splice(i,1);continue}ctx.beginPath();ctx.arc(cx,cy,rg.r,0,Math.PI*2);ctx.strokeStyle=`rgba(201,168,76,${rg.a})`;ctx.lineWidth=1;ctx.stroke();}
+    for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.life+=p.speed;p.vy+=.06;p.x+=p.vx;p.y+=p.vy;
+    if(p.life>1){parts.splice(i,1);continue}
+    const a=Math.sin(p.life*Math.PI)*.9;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(201,168,76,${a})`;ctx.fill();
+  }
+  }
+  animate();
+}
+
+// ── EMAIL: costruito via JS per evitare offuscamento Cloudflare/Netlify ──
+(function(){
+  const card = document.getElementById('email-card');
+  if(card){
+    const e = ['admin', 'houseoftartufo.com'].join('\u0040');
+    card.href = 'mailto:' + e;
+  }
+})();
+</script>
+</body>
+</html>
