@@ -3,6 +3,7 @@ import { t } from './i18n.js';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, resolveLanguage } from './language.js';
 import { bindPremiumMediaMotion, createTruffleExplorer, mediaViewLabel } from './truffle-explorer.js';
 import './product-images.css';
+import './explorer-v3.css';
 
 const state = {
   language: DEFAULT_LANGUAGE,
