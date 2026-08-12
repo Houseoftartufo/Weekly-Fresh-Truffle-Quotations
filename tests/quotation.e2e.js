@@ -46,7 +46,7 @@ test('changes language and persists it in the URL', async ({ page }) => {
   await page.goto('/?lang=it');
   await page.getByRole('button', { name: 'FR' }).click();
   await expect(page).toHaveURL(/lang=fr/);
-  await expect(page.getByRole('link', { name: 'Voir les prix' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ouvrir la cotation' })).toBeVisible();
 });
 
 test('mobile keeps high-priority actions visible', async ({ page }, testInfo) => {
