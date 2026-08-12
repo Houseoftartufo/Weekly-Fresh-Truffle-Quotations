@@ -1,5 +1,6 @@
 import { loadQuotation } from './data.js';
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, resolveLanguage, t } from './i18n.js';
+import { t } from './i18n.js';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, resolveLanguage } from './language.js';
 import './product-images.css';
 
 const state = {
@@ -31,10 +32,10 @@ function applyTranslations(language) {
     button.setAttribute('aria-pressed', String(active));
   });
   document.title = {
-    it: 'House of Tartufo — Quotazioni Settimanali',
     en: 'House of Tartufo — Weekly Fresh Truffle Quotations',
     fr: 'House of Tartufo — Cotations Hebdomadaires',
-    nl: 'House of Tartufo — Wekelijkse Truffelprijzen'
+    nl: 'House of Tartufo — Wekelijkse Truffelprijzen',
+    it: 'House of Tartufo — Quotazioni Settimanali'
   }[language] || 'House of Tartufo — Weekly Fresh Truffle Quotations';
   updateGeneralWhatsapp();
 }
@@ -78,10 +79,10 @@ function buildWhatsappMessage(product) {
   const first = product.grades.find((grade) => grade.id === 'first-choice') ?? product.grades[0];
   const price = first?.amount == null ? t(language, 'product.noPrice') : `${formatCurrency(first.amount, language)}/kg`;
   const messages = {
-    it: `Buongiorno House of Tartufo, sono interessato alla quotazione di questa settimana per ${product.name} (${product.latin || 'tartufo fresco'}) — ${price}. Quantità: ___ kg. Destinazione: ___.`,
     en: `Hello House of Tartufo, I am interested in this week's quotation for ${product.name} (${product.latin || 'fresh truffle'}) — ${price}. Quantity: ___ kg. Destination: ___.`,
     fr: `Bonjour House of Tartufo, je suis intéressé par la cotation de cette semaine pour ${product.name} (${product.latin || 'truffe fraîche'}) — ${price}. Quantité : ___ kg. Destination : ___.`,
-    nl: `Hallo House of Tartufo, ik ben geïnteresseerd in de notering van deze week voor ${product.name} (${product.latin || 'verse truffel'}) — ${price}. Hoeveelheid: ___ kg. Bestemming: ___.`
+    nl: `Hallo House of Tartufo, ik ben geïnteresseerd in de notering van deze week voor ${product.name} (${product.latin || 'verse truffel'}) — ${price}. Hoeveelheid: ___ kg. Bestemming: ___.`,
+    it: `Buongiorno House of Tartufo, sono interessato alla quotazione di questa settimana per ${product.name} (${product.latin || 'tartufo fresco'}) — ${price}. Quantità: ___ kg. Destinazione: ___.`
   };
   return messages[language] || messages.en;
 }
@@ -244,10 +245,10 @@ async function refreshQuotation() {
 
 function updateGeneralWhatsapp() {
   const messages = {
-    it: 'Buongiorno House of Tartufo, vorrei informazioni sulla quotazione dei tartufi freschi di questa settimana.',
     en: "Hello House of Tartufo, I would like information about this week's fresh truffle quotation.",
     fr: 'Bonjour House of Tartufo, je voudrais des informations sur la cotation des truffes fraîches de cette semaine.',
-    nl: 'Hallo House of Tartufo, ik wil graag informatie over de verse truffelnotering van deze week.'
+    nl: 'Hallo House of Tartufo, ik wil graag informatie over de verse truffelnotering van deze week.',
+    it: 'Buongiorno House of Tartufo, vorrei informazioni sulla quotazione dei tartufi freschi di questa settimana.'
   };
   document.querySelectorAll('[data-whatsapp-general]').forEach((link) => {
     link.href = `https://wa.me/32480205715?text=${encodeURIComponent(messages[state.language] || messages.en)}`;
