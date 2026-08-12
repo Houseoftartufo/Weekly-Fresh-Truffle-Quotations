@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+const imageOne = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="480"%3E%3Crect width="100%25" height="100%25" fill="%23efe7dc"/%3E%3C/svg%3E';
+const imageTwo = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="480"%3E%3Crect width="100%25" height="100%25" fill="%23d7c4aa"/%3E%3C/svg%3E';
+const imageThree = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="480"%3E%3Crect width="100%25" height="100%25" fill="%23b8a48d"/%3E%3C/svg%3E';
+
 const quotation = {
   marketLabel: 'Week 33',
   updatedAt: '2026-08-12T08:15:00+02:00',
@@ -16,13 +20,36 @@ const quotation = {
       origin: 'Italy',
       badge: 'Fresh',
       availability: 'available',
+      featured: true,
       shopifyHandle: 'italian-summer-truffle-fresh-tuber-aestivum',
       productUrl: 'https://houseoftartufo.com/products/italian-summer-truffle-fresh-tuber-aestivum',
-      imageUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="480"%3E%3Crect width="100%25" height="100%25" fill="%23efe7dc"/%3E%3C/svg%3E',
+      imageUrl: imageOne,
       imageAlt: 'Fresh Summer Black Truffle Tuber aestivum',
+      gallery: [
+        { url: imageOne, alt: 'Fresh Summer Black Truffle Tuber aestivum' },
+        { url: imageTwo, alt: 'Summer truffle macro texture' }
+      ],
       grades: [
         { id: 'first-choice', labelKey: 'product.first', detail: '20–80 g', amount: 140 },
         { id: 'second-choice', labelKey: 'product.second', detail: '', amount: 120 }
+      ]
+    },
+    {
+      id: 'tuber-borchii',
+      name: 'Bianchetto',
+      latin: 'Tuber borchii',
+      description: 'Aromatic seasonal selection.',
+      origin: 'Italy',
+      badge: 'Seasonal',
+      availability: 'limited',
+      featured: false,
+      shopifyHandle: 'bianchetto-truffle-tuber-borchii',
+      productUrl: 'https://houseoftartufo.com/products/bianchetto-truffle-tuber-borchii',
+      imageUrl: imageThree,
+      imageAlt: 'Fresh Bianchetto Tuber borchii',
+      gallery: [{ url: imageThree, alt: 'Fresh Bianchetto Tuber borchii' }],
+      grades: [
+        { id: 'first-choice', labelKey: 'product.first', detail: '8–30 g', amount: 530 }
       ]
     }
   ]
@@ -53,6 +80,26 @@ test('shows price, Shopify image and order actions without a presentation flow',
   await expect(page.getByRole('img', { name: 'Fresh Summer Black Truffle Tuber aestivum' })).toBeAttached();
   await expect(page.getByRole('link', { name: /Order — Summer Truffle/ })).toBeVisible();
   await expect(page.getByRole('link', { name: /WhatsApp — Summer Truffle/ })).toBeVisible();
+});
+
+test('opens fullscreen explorer, changes gallery image and navigates seasonal truffles', async ({ page }) => {
+  await page.goto('/?lang=en');
+  await page.getByRole('button', { name: 'View details — Summer Truffle' }).click();
+
+  const explorer = page.locator('.truffle-explorer');
+  await expect(explorer).toBeVisible();
+  await expect(explorer.getByRole('heading', { name: 'Summer Truffle' })).toBeVisible();
+  await expect(explorer.getByText('€140')).toBeVisible();
+
+  await explorer.getByRole('button', { name: 'Image 2 / 2' }).click();
+  await expect(explorer.getByRole('img', { name: 'Summer truffle macro texture' })).toBeVisible();
+
+  await page.keyboard.press('ArrowRight');
+  await expect(explorer.getByRole('heading', { name: 'Bianchetto' })).toBeVisible();
+  await expect(explorer.getByText('€530')).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await expect(explorer).not.toBeVisible();
 });
 
 test('changes language and persists it in the URL', async ({ page }) => {
