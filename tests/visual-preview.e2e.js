@@ -56,7 +56,7 @@ test('capture real V3 landing preview', async ({ page }, testInfo) => {
   await page.locator('[data-hero-open]').click();
   await expect(page.locator('.truffle-explorer')).toBeVisible();
   await page.locator('.explorer-image').evaluate((img) => img.decode?.().catch(() => {}));
-  await page.screenshot({ path: 'artifacts/explorer-desktop.png', fullPage: true });
+  await page.screenshot({ path: 'artifacts/explorer-desktop.png' });
 });
 
 test('capture real V3 mobile preview', async ({ page }, testInfo) => {
