@@ -1,10 +1,10 @@
 # House of Tartufo — Weekly Quotations V3 Design Reference
 
-Status: APPROVED VISUAL DIRECTION · IMPLEMENTATION IN PROGRESS
+Status: APPROVED · IMPLEMENTED · PREVIEW VERIFIED
 Date: 2026-08-12
 Branch: `refactor/light-quotation-v2`
 
-Implementation status: the cinematic V3 Truffle Explorer, dynamic product-count layouts, Shopify gallery enrichment, featured-product logic, responsive interactions, and associated tests are implemented on this branch. This document also serves as the stable visual specification for preview/deployment verification.
+Implementation status: the approved V3 landing, cinematic Truffle Explorer, dynamic product-count layouts, Shopify gallery enrichment, featured-product logic, responsive interactions, EN/FR/NL/IT behavior, and associated tests are implemented on this branch. The V3 branch preview has been rendered successfully in Chromium CI and deployed successfully as a Vercel preview. This document is the official implementation checkpoint and stable visual specification for merge/deployment verification.
 
 ## Core direction
 
@@ -187,3 +187,7 @@ Preserve the production architecture already implemented on `refactor/light-quot
 - CI
 
 V3 is primarily a frontend/art-direction redesign. Do not regress the data engine while matching the approved visual reference.
+
+## Approved implementation checkpoint
+
+The current V3 branch state is approved as the implementation checkpoint for future merge/deployment review. `main` remains unchanged until an explicit production merge is requested.
