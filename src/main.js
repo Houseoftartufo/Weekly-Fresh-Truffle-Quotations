@@ -1,5 +1,6 @@
 import { loadQuotation } from './data.js';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, resolveLanguage, t } from './i18n.js';
+import './product-images.css';
 
 const state = {
   language: DEFAULT_LANGUAGE,
@@ -65,11 +66,6 @@ function formatDate(value, language) {
   }).format(parsed);
 }
 
-function setNodeText(parent, selector, value) {
-  const node = parent.querySelector(selector);
-  if (node) node.textContent = value;
-}
-
 function create(tag, className, text) {
   const element = document.createElement(tag);
   if (className) element.className = className;
@@ -90,9 +86,34 @@ function buildWhatsappMessage(product) {
   return messages[language] || messages.en;
 }
 
+function buildProductMedia(product) {
+  if (!product.imageUrl) return null;
+  const media = create(product.productUrl ? 'a' : 'div', 'product-media');
+  if (product.productUrl) {
+    media.href = product.productUrl;
+    media.target = '_blank';
+    media.rel = 'noopener noreferrer';
+    media.setAttribute('aria-label', `${product.name} — House of Tartufo`);
+  }
+
+  const image = create('img', 'product-image');
+  image.src = product.imageUrl;
+  image.alt = product.imageAlt || product.name;
+  image.loading = 'lazy';
+  image.decoding = 'async';
+  image.referrerPolicy = 'no-referrer-when-downgrade';
+  image.addEventListener('error', () => media.remove(), { once: true });
+  media.append(image);
+  return media;
+}
+
 function buildProductCard(product) {
   const article = create('article', 'product-card');
   article.id = `product-${product.id}`;
+  if (product.imageUrl) article.classList.add('has-image');
+
+  const media = buildProductMedia(product);
+  const content = create('div', 'product-card-content');
 
   const top = create('div', 'product-top');
   const badge = create('span', 'product-badge', product.badge || t(state.language, 'product.selected'));
@@ -125,7 +146,7 @@ function buildProductCard(product) {
 
   const actions = create('div', 'product-actions');
   const order = create('a', 'button button-primary', t(state.language, 'product.order'));
-  order.href = `https://houseoftartufo.com/search?q=${encodeURIComponent(product.name)}`;
+  order.href = product.productUrl || `https://houseoftartufo.com/search?q=${encodeURIComponent(product.latin || product.name)}`;
   order.target = '_blank';
   order.rel = 'noopener noreferrer';
   order.setAttribute('aria-label', `${t(state.language, 'product.order')} — ${product.name}`);
@@ -147,18 +168,23 @@ function buildProductCard(product) {
   }[product.availability] || 'product.available';
   availability.append(availabilityDot, document.createTextNode(t(state.language, availabilityLabel)));
 
-  article.append(top, title, latin, description, grades, actions, availability);
+  content.append(top, title, latin, description, grades, actions, availability);
+  if (media) article.append(media);
+  article.append(content);
   return article;
 }
 
 function renderProducts(quotation) {
   grid.replaceChildren();
+  const count = quotation.products.length;
+  grid.dataset.count = count <= 1 ? '1' : count === 2 ? '2' : count === 3 ? '3' : 'many';
   quotation.products.forEach((product) => grid.append(buildProductCard(product)));
   grid.setAttribute('aria-busy', 'false');
 }
 
 function renderSkeleton() {
   grid.setAttribute('aria-busy', 'true');
+  grid.dataset.count = '3';
   grid.replaceChildren();
   for (let i = 0; i < 3; i += 1) {
     const skeleton = create('article', 'product-card product-card-skeleton');
