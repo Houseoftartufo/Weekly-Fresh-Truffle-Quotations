@@ -43,7 +43,7 @@ test('uses English as primary language and EN FR NL IT order', async ({ page }) 
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('.language-switcher .lang-button')).toHaveText(['EN', 'FR', 'NL', 'IT']);
   await expect(page.getByRole('button', { name: 'EN' })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('link', { name: 'View prices' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open quotation' })).toBeVisible();
 });
 
 test('shows price, Shopify image and order actions without a presentation flow', async ({ page }) => {
