@@ -1,11 +1,13 @@
 import { loadQuotation } from './data.js';
 import { t } from './i18n.js';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, resolveLanguage } from './language.js';
+import { bindPremiumMediaMotion, createTruffleExplorer, mediaViewLabel } from './truffle-explorer.js';
 import './product-images.css';
 
 const state = {
   language: DEFAULT_LANGUAGE,
   quotation: null,
+  displayProducts: [],
   requestId: 0
 };
 
@@ -16,6 +18,7 @@ const headerUpdated = document.querySelector('[data-header-updated]');
 const errorBanner = document.querySelector('[data-error]');
 const errorText = document.querySelector('[data-error-text]');
 const toast = document.querySelector('[data-toast]');
+let explorer = null;
 
 function applyTranslations(language) {
   document.documentElement.lang = language;
@@ -38,6 +41,7 @@ function applyTranslations(language) {
     it: 'House of Tartufo — Quotazioni Settimanali'
   }[language] || 'House of Tartufo — Weekly Fresh Truffle Quotations';
   updateGeneralWhatsapp();
+  explorer?.sync();
 }
 
 function formatCurrency(amount, language) {
@@ -87,33 +91,43 @@ function buildWhatsappMessage(product) {
   return messages[language] || messages.en;
 }
 
-function buildProductMedia(product) {
-  if (!product.imageUrl) return null;
-  const media = create(product.productUrl ? 'a' : 'div', 'product-media');
-  if (product.productUrl) {
-    media.href = product.productUrl;
-    media.target = '_blank';
-    media.rel = 'noopener noreferrer';
-    media.setAttribute('aria-label', `${product.name} — House of Tartufo`);
-  }
+function primaryImage(product) {
+  return product.imageUrl || product.gallery?.find((item) => item?.url)?.url || null;
+}
+
+function buildProductMedia(product, index) {
+  const imageUrl = primaryImage(product);
+  if (!imageUrl) return null;
+
+  const media = create('button', 'product-media');
+  media.type = 'button';
+  media.setAttribute('aria-label', mediaViewLabel(state.language, product.name));
 
   const image = create('img', 'product-image');
-  image.src = product.imageUrl;
-  image.alt = product.imageAlt || product.name;
-  image.loading = 'lazy';
+  image.src = imageUrl;
+  image.alt = product.imageAlt || product.gallery?.[0]?.alt || product.name;
+  image.loading = index === 0 ? 'eager' : 'lazy';
   image.decoding = 'async';
   image.referrerPolicy = 'no-referrer-when-downgrade';
+  if (index === 0) image.fetchPriority = 'high';
+
+  const hint = create('span', 'product-media-hint', mediaViewLabel(state.language, product.name).split(' — ')[0]);
+  hint.setAttribute('aria-hidden', 'true');
+
   image.addEventListener('error', () => media.remove(), { once: true });
-  media.append(image);
+  media.addEventListener('click', () => explorer?.open(index, media));
+  media.append(image, hint);
+  bindPremiumMediaMotion(media, image);
   return media;
 }
 
-function buildProductCard(product) {
+function buildProductCard(product, index) {
   const article = create('article', 'product-card');
   article.id = `product-${product.id}`;
-  if (product.imageUrl) article.classList.add('has-image');
+  if (primaryImage(product)) article.classList.add('has-image');
+  if (product.featured || index === 0) article.classList.add('is-featured');
 
-  const media = buildProductMedia(product);
+  const media = buildProductMedia(product, index);
   const content = create('div', 'product-card-content');
 
   const top = create('div', 'product-top');
@@ -177,10 +191,12 @@ function buildProductCard(product) {
 
 function renderProducts(quotation) {
   grid.replaceChildren();
-  const count = quotation.products.length;
+  state.displayProducts = [...quotation.products].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+  const count = state.displayProducts.length;
   grid.dataset.count = count <= 1 ? '1' : count === 2 ? '2' : count === 3 ? '3' : 'many';
-  quotation.products.forEach((product) => grid.append(buildProductCard(product)));
+  state.displayProducts.forEach((product, index) => grid.append(buildProductCard(product, index)));
   grid.setAttribute('aria-busy', 'false');
+  explorer?.sync();
 }
 
 function renderSkeleton() {
@@ -195,6 +211,7 @@ function renderSkeleton() {
 }
 
 function showEmptyState() {
+  state.displayProducts = [];
   grid.replaceChildren();
   grid.setAttribute('aria-busy', 'false');
   const empty = create('div', 'notice notice-error', t(state.language, 'error.empty'));
@@ -303,6 +320,12 @@ function bindEvents() {
 
 async function init() {
   state.language = resolveLanguage();
+  explorer = createTruffleExplorer({
+    getProducts: () => state.displayProducts,
+    getLanguage: () => state.language,
+    formatCurrency,
+    buildWhatsappMessage
+  });
   applyTranslations(state.language);
   bindEvents();
   await refreshQuotation();
