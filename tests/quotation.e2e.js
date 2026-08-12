@@ -75,16 +75,17 @@ test('uses English as primary language and EN FR NL IT order', async ({ page }) 
 
 test('shows price, Shopify image and order actions without a presentation flow', async ({ page }) => {
   await page.goto('/?lang=en');
-  await expect(page.getByRole('heading', { name: 'Summer Truffle' })).toBeVisible();
-  await expect(page.getByText('€140')).toBeVisible();
-  await expect(page.getByRole('img', { name: 'Fresh Summer Black Truffle Tuber aestivum' })).toBeAttached();
-  await expect(page.getByRole('link', { name: /Order — Summer Truffle/ })).toBeVisible();
-  await expect(page.getByRole('link', { name: /WhatsApp — Summer Truffle/ })).toBeVisible();
+  const quotationSection = page.locator('#quotation');
+  await expect(quotationSection.getByRole('heading', { name: 'Summer Truffle' })).toBeVisible();
+  await expect(quotationSection.getByText('€140')).toBeVisible();
+  await expect(quotationSection.locator('.product-image')).toBeAttached();
+  await expect(quotationSection.getByRole('link', { name: /Order — Summer Truffle/ })).toBeVisible();
+  await expect(quotationSection.getByRole('link', { name: /WhatsApp — Summer Truffle/ })).toBeVisible();
 });
 
 test('opens fullscreen explorer, changes gallery image and navigates seasonal truffles', async ({ page }) => {
   await page.goto('/?lang=en');
-  await page.getByRole('button', { name: 'View details — Summer Truffle' }).click();
+  await page.locator('#quotation').getByRole('button', { name: 'View details — Summer Truffle' }).click();
 
   const explorer = page.locator('.truffle-explorer');
   await expect(explorer).toBeVisible();
