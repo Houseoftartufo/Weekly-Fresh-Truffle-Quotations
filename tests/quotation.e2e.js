@@ -18,7 +18,7 @@ const quotation = {
       availability: 'available',
       shopifyHandle: 'italian-summer-truffle-fresh-tuber-aestivum',
       productUrl: 'https://houseoftartufo.com/products/italian-summer-truffle-fresh-tuber-aestivum',
-      imageUrl: 'https://cdn.shopify.com/example.jpg',
+      imageUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="640" height="480"%3E%3Crect width="100%25" height="100%25" fill="%23efe7dc"/%3E%3C/svg%3E',
       imageAlt: 'Fresh Summer Black Truffle Tuber aestivum',
       grades: [
         { id: 'first-choice', labelKey: 'product.first', detail: '20–80 g', amount: 140 },
