@@ -10,6 +10,11 @@ const GradeSchema = z.object({
   amount: z.number().nonnegative().nullable()
 });
 
+const ImageSchema = z.object({
+  url: z.string().min(1),
+  alt: z.string().default('')
+});
+
 const ProductSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
@@ -18,10 +23,12 @@ const ProductSchema = z.object({
   origin: z.string().default(''),
   badge: z.string().default(''),
   availability: z.enum(['available', 'limited', 'sold-out']).default('available'),
+  featured: z.boolean().default(false),
   shopifyHandle: z.string().default(''),
   productUrl: z.string().nullable().default(null),
   imageUrl: z.string().nullable().default(null),
   imageAlt: z.string().default(''),
+  gallery: z.array(ImageSchema).default([]),
   grades: z.array(GradeSchema).min(1)
 });
 
@@ -115,9 +122,13 @@ function normalizeExternalUrl(value) {
   const raw = String(value || '').trim();
   if (!raw) return null;
   if (raw.startsWith('//')) return `https:${raw}`;
-  if (/^https?:\/\//i.test(raw)) return raw;
+  if (/^https?:\/\//i.test(raw) || /^data:/i.test(raw)) return raw;
   if (raw.startsWith('/')) return `https://houseoftartufo.com${raw}`;
   return raw;
+}
+
+function seedGallery(imageUrl, imageAlt) {
+  return imageUrl ? [{ url: imageUrl, alt: imageAlt || '' }] : [];
 }
 
 function looksLikeTabularSheet(rows) {
@@ -156,6 +167,7 @@ function parseTabularSheet(rows, language) {
     const badge = firstValue(record, [`badge_${language}`, 'badge']);
     const handle = firstValue(record, ['shopify_handle', 'product_handle', 'handle']);
     const imageUrl = normalizeExternalUrl(firstValue(record, ['image_url', 'image', 'featured_image']));
+    const imageAlt = firstValue(record, [`image_alt_${language}`, 'image_alt'], resolvedName);
     const productUrl = normalizeExternalUrl(firstValue(record, ['product_url', 'shopify_url', 'url']));
 
     products.push({
@@ -166,10 +178,12 @@ function parseTabularSheet(rows, language) {
       origin,
       badge,
       availability: parseAvailability(firstValue(record, ['availability', 'disponibilita', 'stock'])),
+      featured: isActive(firstValue(record, ['featured', 'hero', 'highlight'], 'no'), false),
       shopifyHandle: handle,
       productUrl,
       imageUrl,
-      imageAlt: firstValue(record, [`image_alt_${language}`, 'image_alt'], resolvedName),
+      imageAlt,
+      gallery: seedGallery(imageUrl, imageAlt),
       grades: buildGrades(
         firstValue(record, ['first_price', 'prima', 'price_1', 'first_choice']),
         firstValue(record, ['second_price', 'standard', 'price_2', 'second_choice']),
@@ -204,7 +218,7 @@ function parseLegacyKeyValueSheet(rows, language) {
 
   const indexes = [...new Set(
     Object.keys(data)
-      .map((key) => key.match(/^t(\d+)-(?:nome|latin|prima|standard|attivo|id|shopify-handle|product-url|image-url)$/)?.[1])
+      .map((key) => key.match(/^t(\d+)-(?:nome|latin|prima|standard|attivo|id|shopify-handle|product-url|image-url|featured)$/)?.[1])
       .filter(Boolean)
       .map(Number)
   )].sort((a, b) => a - b);
@@ -218,6 +232,8 @@ function parseLegacyKeyValueSheet(rows, language) {
     if (!isActive(data[`${prefix}-attivo`], true)) continue;
 
     const resolvedName = name || latin;
+    const imageUrl = normalizeExternalUrl(data[`${prefix}-image-url`]);
+    const imageAlt = String(data[`${prefix}-image-alt`] || resolvedName).trim();
     products.push({
       id: String(data[`${prefix}-id`] || slugify(latin || resolvedName)),
       name: resolvedName,
@@ -226,10 +242,12 @@ function parseLegacyKeyValueSheet(rows, language) {
       origin: String(data[`${prefix}-origin`] || '').trim(),
       badge: String(data[`${prefix}-badge`] || '').trim(),
       availability: parseAvailability(data[`${prefix}-availability`]),
+      featured: isActive(data[`${prefix}-featured`], false),
       shopifyHandle: String(data[`${prefix}-shopify-handle`] || data[`${prefix}-handle`] || '').trim(),
       productUrl: normalizeExternalUrl(data[`${prefix}-product-url`]),
-      imageUrl: normalizeExternalUrl(data[`${prefix}-image-url`]),
-      imageAlt: String(data[`${prefix}-image-alt`] || resolvedName).trim(),
+      imageUrl,
+      imageAlt,
+      gallery: seedGallery(imageUrl, imageAlt),
       grades: buildGrades(
         data[`${prefix}-prima`],
         data[`${prefix}-standard`],
