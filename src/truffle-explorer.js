@@ -1,8 +1,24 @@
 const labels = {
-  en: { view: 'View details', close: 'Close explorer', previous: 'Previous truffle', next: 'Next truffle', reserve: 'Reserve this batch', image: 'Image', available: 'Available this week', limited: 'Limited availability', soldOut: 'Sold out' },
-  fr: { view: 'Voir les détails', close: 'Fermer', previous: 'Truffe précédente', next: 'Truffe suivante', reserve: 'Réserver ce lot', image: 'Image', available: 'Disponible cette semaine', limited: 'Disponibilité limitée', soldOut: 'Épuisé' },
-  nl: { view: 'Bekijk details', close: 'Sluiten', previous: 'Vorige truffel', next: 'Volgende truffel', reserve: 'Reserveer deze batch', image: 'Afbeelding', available: 'Deze week beschikbaar', limited: 'Beperkt beschikbaar', soldOut: 'Uitverkocht' },
-  it: { view: 'Vedi dettagli', close: 'Chiudi', previous: 'Tartufo precedente', next: 'Tartufo successivo', reserve: 'Prenota questo lotto', image: 'Immagine', available: 'Disponibile questa settimana', limited: 'Disponibilità limitata', soldOut: 'Esaurito' }
+  en: {
+    view: 'View details', close: 'Close explorer', previous: 'Previous truffle', next: 'Next truffle', reserve: 'Reserve this batch',
+    image: 'Image', available: 'Available this week', limited: 'Limited availability', soldOut: 'Sold out',
+    origin: 'Origin', grade: 'Grade', size: 'Size', first: 'First choice', zoomIn: 'Zoom in', zoomOut: 'Zoom out'
+  },
+  fr: {
+    view: 'Voir les détails', close: 'Fermer', previous: 'Truffe précédente', next: 'Truffe suivante', reserve: 'Réserver ce lot',
+    image: 'Image', available: 'Disponible cette semaine', limited: 'Disponibilité limitée', soldOut: 'Épuisé',
+    origin: 'Origine', grade: 'Qualité', size: 'Taille', first: 'Premier choix', zoomIn: 'Zoomer', zoomOut: 'Dézoomer'
+  },
+  nl: {
+    view: 'Bekijk details', close: 'Sluiten', previous: 'Vorige truffel', next: 'Volgende truffel', reserve: 'Reserveer deze batch',
+    image: 'Afbeelding', available: 'Deze week beschikbaar', limited: 'Beperkt beschikbaar', soldOut: 'Uitverkocht',
+    origin: 'Herkomst', grade: 'Kwaliteit', size: 'Maat', first: 'Eerste keuze', zoomIn: 'Inzoomen', zoomOut: 'Uitzoomen'
+  },
+  it: {
+    view: 'Vedi dettagli', close: 'Chiudi', previous: 'Tartufo precedente', next: 'Tartufo successivo', reserve: 'Prenota questo lotto',
+    image: 'Immagine', available: 'Disponibile questa settimana', limited: 'Disponibilità limitata', soldOut: 'Esaurito',
+    origin: 'Origine', grade: 'Qualità', size: 'Pezzatura', first: 'Prima scelta', zoomIn: 'Ingrandisci', zoomOut: 'Riduci'
+  }
 };
 
 function copy(language) {
@@ -61,36 +77,72 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
 
   const shell = create('div', 'explorer-shell');
   const topbar = create('div', 'explorer-topbar');
+  const brand = create('div', 'explorer-brand');
+  const brandMark = create('span', 'explorer-brand-mark');
+  brandMark.setAttribute('aria-hidden', 'true');
+  brand.append(brandMark, create('span', '', 'House of Tartufo'));
   const counter = create('span', 'explorer-counter');
   const close = create('button', 'explorer-close', '×');
   close.type = 'button';
-  topbar.append(counter, close);
+  topbar.append(brand, counter, close);
 
   const body = create('div', 'explorer-body');
+
+  const panel = create('aside', 'explorer-panel');
+  const eyebrow = create('p', 'explorer-eyebrow');
+  const title = create('h2', 'explorer-title');
+  const latin = create('p', 'explorer-latin');
+  const specs = create('div', 'explorer-specs');
+  const originSpec = create('div', 'explorer-spec');
+  const originLabel = create('span', 'explorer-spec-label');
+  const originValue = create('span', 'explorer-spec-value');
+  originSpec.append(originLabel, originValue);
+  const gradeSpec = create('div', 'explorer-spec');
+  const gradeLabel = create('span', 'explorer-spec-label');
+  const gradeValue = create('span', 'explorer-spec-value');
+  gradeSpec.append(gradeLabel, gradeValue);
+  const sizeSpec = create('div', 'explorer-spec');
+  const sizeLabel = create('span', 'explorer-spec-label');
+  const sizeValue = create('span', 'explorer-spec-value');
+  sizeSpec.append(sizeLabel, sizeValue);
+  specs.append(originSpec, gradeSpec, sizeSpec);
+
+  const price = create('div', 'explorer-price');
+  const availability = create('div', 'explorer-availability');
+  const reserve = create('a', 'explorer-reserve');
+  reserve.target = '_blank';
+  reserve.rel = 'noopener noreferrer';
+  panel.append(eyebrow, title, latin, specs, price, availability, reserve);
+
+  const visual = create('div', 'explorer-visual');
   const stage = create('div', 'explorer-stage');
   const image = create('img', 'explorer-image');
   image.draggable = false;
   const prev = create('button', 'explorer-nav explorer-nav-prev', '←');
   const next = create('button', 'explorer-nav explorer-nav-next', '→');
   prev.type = next.type = 'button';
-  stage.append(image, prev, next);
 
-  const panel = create('aside', 'explorer-panel');
-  const eyebrow = create('p', 'explorer-eyebrow');
-  const title = create('h2', 'explorer-title');
-  const latin = create('p', 'explorer-latin');
-  const origin = create('p', 'explorer-origin');
-  const price = create('div', 'explorer-price');
-  const detail = create('p', 'explorer-detail');
-  const availability = create('div', 'explorer-availability');
-  const dots = create('div', 'explorer-dots');
-  const reserve = create('a', 'explorer-reserve');
-  reserve.target = '_blank';
-  reserve.rel = 'noopener noreferrer';
-  panel.append(eyebrow, title, latin, origin, price, detail, availability, dots, reserve);
+  const zoomControls = create('div', 'explorer-zoom-controls');
+  const zoomOut = create('button', 'explorer-zoom-button', '−');
+  const zoomIn = create('button', 'explorer-zoom-button', '+');
+  zoomOut.type = zoomIn.type = 'button';
+  zoomControls.append(zoomOut, zoomIn);
+  stage.append(image, prev, next, zoomControls);
 
-  body.append(stage, panel);
-  shell.append(topbar, body);
+  const gallery = create('div', 'explorer-gallery');
+  visual.append(stage, gallery);
+  body.append(panel, visual);
+
+  const footer = create('div', 'explorer-footer');
+  const footerMeta = create('div', 'explorer-footer-meta');
+  const footerOrigin = create('span');
+  const footerGrade = create('span');
+  const footerSize = create('span');
+  footerMeta.append(footerOrigin, footerGrade, footerSize);
+  const footerStatus = create('div', 'explorer-footer-status');
+  footer.append(footerMeta, footerStatus);
+
+  shell.append(topbar, body, footer);
   dialog.append(shell);
   document.body.append(dialog);
 
@@ -114,8 +166,12 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
     return products()[productIndex] || null;
   }
 
+  function currentImages() {
+    return productImages(currentProduct());
+  }
+
   function clampZoom(value) {
-    return Math.max(1, Math.min(2.4, value));
+    return Math.max(1, Math.min(2.6, value));
   }
 
   function applyTransform() {
@@ -130,6 +186,12 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
     applyTransform();
   }
 
+  function setZoom(nextZoom) {
+    zoom = clampZoom(nextZoom);
+    if (zoom === 1) panX = panY = 0;
+    applyTransform();
+  }
+
   function setImage(index) {
     const product = currentProduct();
     const images = productImages(product);
@@ -140,56 +202,84 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
     image.alt = selected.alt || product.imageAlt || product.name;
     resetZoom();
 
-    [...dots.children].forEach((dot, dotIndex) => {
-      dot.classList.toggle('is-active', dotIndex === imageIndex);
-      dot.setAttribute('aria-current', dotIndex === imageIndex ? 'true' : 'false');
+    [...gallery.children].forEach((thumb, thumbIndex) => {
+      const active = thumbIndex === imageIndex;
+      thumb.classList.toggle('is-active', active);
+      thumb.setAttribute('aria-current', active ? 'true' : 'false');
     });
+  }
+
+  function availabilityCopy(product, c) {
+    if (product.availability === 'limited') return c.limited;
+    if (product.availability === 'sold-out') return c.soldOut;
+    return c.available;
   }
 
   function render() {
     const list = products();
     const product = currentProduct();
     if (!product) return;
+
     const language = getLanguage?.() || 'en';
     const c = copy(language);
     const images = productImages(product);
     const first = product.grades?.find((grade) => grade.id === 'first-choice') || product.grades?.[0];
+    const countText = `${String(productIndex + 1).padStart(2, '0')} / ${String(list.length).padStart(2, '0')}`;
+    const statusText = availabilityCopy(product, c);
+    const statusClass = product.availability || 'available';
 
-    counter.textContent = `${String(productIndex + 1).padStart(2, '0')} / ${String(list.length).padStart(2, '0')}`;
+    counter.textContent = countText;
+    eyebrow.textContent = countText;
     close.setAttribute('aria-label', c.close);
     prev.setAttribute('aria-label', c.previous);
     next.setAttribute('aria-label', c.next);
+    zoomIn.setAttribute('aria-label', c.zoomIn);
+    zoomOut.setAttribute('aria-label', c.zoomOut);
     prev.hidden = next.hidden = list.length <= 1;
 
-    eyebrow.textContent = product.badge || 'FRESH MARKET';
     title.textContent = product.name;
     latin.textContent = product.latin || '';
-    origin.textContent = product.origin || '';
+    originLabel.textContent = c.origin;
+    originValue.textContent = product.origin || '—';
+    gradeLabel.textContent = c.grade;
+    gradeValue.textContent = c.first;
+    sizeLabel.textContent = c.size;
+    sizeValue.textContent = first?.detail || '—';
+
     price.replaceChildren();
     if (first?.amount == null) {
       price.textContent = '—';
     } else {
       price.append(document.createTextNode(formatCurrency(first.amount, language)));
-      price.append(create('small', '', ' / KG'));
+      price.append(create('small', '', '/ KG'));
     }
-    detail.textContent = first?.detail || '';
 
-    const statusText = product.availability === 'limited' ? c.limited : product.availability === 'sold-out' ? c.soldOut : c.available;
-    availability.className = `explorer-availability is-${product.availability || 'available'}`;
+    availability.className = `explorer-availability is-${statusClass}`;
     availability.textContent = `● ${statusText}`;
-
     reserve.textContent = `${c.reserve} →`;
     reserve.href = `https://wa.me/32480205715?text=${encodeURIComponent(buildWhatsappMessage(product))}`;
 
-    dots.replaceChildren();
+    gallery.replaceChildren();
     images.forEach((item, index) => {
-      const dot = create('button', 'explorer-dot');
-      dot.type = 'button';
-      dot.setAttribute('aria-label', `${c.image} ${index + 1} / ${images.length}`);
-      dot.addEventListener('click', () => setImage(index));
-      dots.append(dot);
+      const thumb = create('button', 'explorer-dot explorer-thumb');
+      thumb.type = 'button';
+      thumb.setAttribute('aria-label', `${c.image} ${index + 1} / ${images.length}`);
+      const thumbImage = create('img', 'explorer-thumb-image');
+      thumbImage.src = item.url;
+      thumbImage.alt = '';
+      thumbImage.loading = 'lazy';
+      thumbImage.decoding = 'async';
+      thumb.append(thumbImage);
+      thumb.addEventListener('click', () => setImage(index));
+      gallery.append(thumb);
     });
-    dots.hidden = images.length <= 1;
+    gallery.hidden = images.length === 0;
+
+    footerOrigin.textContent = product.origin || '—';
+    footerGrade.textContent = c.first;
+    footerSize.textContent = first?.detail || '—';
+    footerStatus.className = `explorer-footer-status is-${statusClass}`;
+    footerStatus.textContent = statusText;
 
     if (images.length) {
       image.hidden = false;
@@ -197,6 +287,7 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
     } else {
       image.hidden = true;
       image.removeAttribute('src');
+      resetZoom();
     }
   }
 
@@ -206,6 +297,15 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
     productIndex = (productIndex + direction + list.length) % list.length;
     imageIndex = 0;
     render();
+  }
+
+  function navigateImage(direction) {
+    const images = currentImages();
+    if (images.length > 1) {
+      setImage(imageIndex + direction);
+      return;
+    }
+    navigateProduct(direction);
   }
 
   function open(index = 0, trigger = document.activeElement) {
@@ -227,6 +327,9 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
   close.addEventListener('click', closeDialog);
   prev.addEventListener('click', () => navigateProduct(-1));
   next.addEventListener('click', () => navigateProduct(1));
+  zoomIn.addEventListener('click', () => setZoom(zoom + .35));
+  zoomOut.addEventListener('click', () => setZoom(zoom - .35));
+
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) closeDialog();
   });
@@ -249,17 +352,13 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
   stage.addEventListener('wheel', (event) => {
     if (!dialog.open || image.hidden) return;
     event.preventDefault();
-    zoom = clampZoom(zoom + (event.deltaY < 0 ? 0.14 : -0.14));
-    if (zoom === 1) panX = panY = 0;
-    applyTransform();
+    setZoom(zoom + (event.deltaY < 0 ? .14 : -.14));
   }, { passive: false });
 
   stage.addEventListener('dblclick', (event) => {
     if (image.hidden) return;
     event.preventDefault();
-    zoom = zoom > 1.1 ? 1 : 2;
-    if (zoom === 1) panX = panY = 0;
-    applyTransform();
+    setZoom(zoom > 1.1 ? 1 : 2);
   });
 
   stage.addEventListener('pointerdown', (event) => {
@@ -285,9 +384,7 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
       const distance = Math.hypot(a.x - b.x, a.y - b.y);
-      if (pinchStartDistance > 0) zoom = clampZoom(pinchStartZoom * (distance / pinchStartDistance));
-      if (zoom === 1) panX = panY = 0;
-      applyTransform();
+      if (pinchStartDistance > 0) setZoom(pinchStartZoom * (distance / pinchStartDistance));
     } else if (pointers.size === 1 && zoom > 1.01 && dragStart) {
       panX = dragStart.panX + (event.clientX - dragStart.x);
       panY = dragStart.panY + (event.clientY - dragStart.y);
@@ -304,7 +401,7 @@ export function createTruffleExplorer({ getProducts, getLanguage, formatCurrency
       const dy = event.clientY - swipeStart.y;
       const duration = performance.now() - swipeStart.time;
       if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.25 && duration < 700) {
-        navigateProduct(dx < 0 ? 1 : -1);
+        navigateImage(dx < 0 ? 1 : -1);
       }
     }
     if (pointers.size < 2) pinchStartDistance = 0;
