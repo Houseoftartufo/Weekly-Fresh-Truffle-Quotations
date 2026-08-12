@@ -13,8 +13,8 @@ const currentQuotation = {
       name: 'Summer Truffle',
       latin: 'Tuber Aestivum',
       description: 'Delicate versatile aroma, ideal for summer cuisine.',
-      origin: 'Italy',
-      badge: 'Fresh market',
+      origin: '',
+      badge: '',
       availability: 'available',
       featured: true,
       shopifyHandle: 'summer-black-truffle-tuber-aestivum',
@@ -49,11 +49,11 @@ test('capture real V3 landing preview', async ({ page }, testInfo) => {
   if (testInfo.project.name === 'mobile') test.skip();
   await page.setViewportSize({ width: 1440, height: 1100 });
   await page.goto('/?lang=en', { waitUntil: 'networkidle' });
-  await expect(page.getByRole('heading', { name: 'Summer Truffle' })).toBeVisible();
+  await expect(page.locator('#quotation').getByRole('heading', { name: 'Summer Truffle' })).toBeVisible();
   await page.locator('.product-image').evaluate((img) => img.decode?.().catch(() => {}));
   await page.screenshot({ path: 'artifacts/landing-desktop.png', fullPage: true });
 
-  await page.getByRole('button', { name: 'View details — Summer Truffle' }).click();
+  await page.locator('[data-hero-open]').click();
   await expect(page.locator('.truffle-explorer')).toBeVisible();
   await page.locator('.explorer-image').evaluate((img) => img.decode?.().catch(() => {}));
   await page.screenshot({ path: 'artifacts/explorer-desktop.png', fullPage: true });
@@ -62,7 +62,7 @@ test('capture real V3 landing preview', async ({ page }, testInfo) => {
 test('capture real V3 mobile preview', async ({ page }, testInfo) => {
   if (testInfo.project.name !== 'mobile') test.skip();
   await page.goto('/?lang=en', { waitUntil: 'networkidle' });
-  await expect(page.getByRole('heading', { name: 'Summer Truffle' })).toBeVisible();
+  await expect(page.locator('#quotation').getByRole('heading', { name: 'Summer Truffle' })).toBeVisible();
   await page.locator('.product-image').evaluate((img) => img.decode?.().catch(() => {}));
   await page.screenshot({ path: 'artifacts/landing-mobile.png', fullPage: true });
 });
