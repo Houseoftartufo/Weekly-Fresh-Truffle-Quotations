@@ -1,8 +1,10 @@
 # House of Tartufo — Weekly Quotations V3 Design Reference
 
-Status: APPROVED VISUAL DIRECTION
+Status: APPROVED VISUAL DIRECTION · IMPLEMENTATION IN PROGRESS
 Date: 2026-08-12
 Branch: `refactor/light-quotation-v2`
+
+Implementation status: the cinematic V3 Truffle Explorer, dynamic product-count layouts, Shopify gallery enrichment, featured-product logic, responsive interactions, and associated tests are implemented on this branch. This document also serves as the stable visual specification for preview/deployment verification.
 
 ## Core direction
 
