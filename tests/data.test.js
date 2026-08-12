@@ -21,6 +21,7 @@ t1-prima,140,140,140,140
 t1-standard,120,120,120,120
 t1-unit,20–80 g,20–80 g,20–80 g,20–80 g
 t1-desc,Fresco questa settimana,Fresh this week,Fraîche cette semaine,Vers deze week
+t1-shopify-handle,italian-summer-truffle-fresh-tuber-aestivum,italian-summer-truffle-fresh-tuber-aestivum,italian-summer-truffle-fresh-tuber-aestivum,italian-summer-truffle-fresh-tuber-aestivum
 t2-attivo,no,no,non,nee
 t2-nome,Tartufo Nero,Black Truffle,Truffe Noire,Zwarte Truffel`;
 
@@ -31,14 +32,40 @@ t2-nome,Tartufo Nero,Black Truffle,Truffe Noire,Zwarte Truffel`;
     expect(quotation.products[0].name).toBe('Summer Truffle');
     expect(quotation.products[0].grades[0].amount).toBe(140);
     expect(quotation.products[0].grades[1].amount).toBe(120);
+    expect(quotation.products[0].shopifyHandle).toBe('italian-summer-truffle-fresh-tuber-aestivum');
   });
 
   it('supports more than the previous four-product hard limit', () => {
-    const extraRows = Array.from({ length: 8 }, (_, index) => {
+    const extraRows = Array.from({ length: 12 }, (_, index) => {
       const i = index + 1;
       return `t${i}-attivo,si,yes,oui,ja\nt${i}-nome,Prodotto ${i},Product ${i},Produit ${i},Product ${i}\nt${i}-prima,${100 + i},${100 + i},${100 + i},${100 + i}`;
     }).join('\n');
     const dynamicCsv = `key,it,en,fr,nl\n${extraRows}`;
-    expect(parseSheetCsv(dynamicCsv, 'en').products).toHaveLength(8);
+    expect(parseSheetCsv(dynamicCsv, 'en').products).toHaveLength(12);
+  });
+
+  it('does not require continuous t-numbers', () => {
+    const gapped = `key,it,en,fr,nl
+t1-nome,Estivo,Summer,Summer,Summer
+t1-prima,140,140,140,140
+t4-nome,Bianchetto,Bianchetto,Bianchetto,Bianchetto
+t4-prima,500,500,500,500
+t17-nome,Bianco,White,White,White
+t17-prima,2000,2000,2000,2000`;
+    const quotation = parseSheetCsv(gapped, 'en');
+    expect(quotation.products.map((product) => product.name)).toEqual(['Summer', 'Bianchetto', 'White']);
+  });
+
+  it('supports a one-row-per-product Excel/Sheet model', () => {
+    const table = `active,name_it,name_en,name_fr,name_nl,latin,origin,availability,first_price,first_detail,second_price,second_detail,shopify_handle
+yes,Tartufo Estivo,Summer Truffle,Truffe d'été,Zomertruffel,Tuber aestivum,Italy,available,140,20-80 g,120,5-20 g,italian-summer-truffle-fresh-tuber-aestivum
+no,Tartufo Bianco,White Truffle,Truffe blanche,Witte truffel,Tuber magnatum,Italy,sold-out,2500,15 g,,,,
+yes,Bianchetto,Bianchetto,Bianchetto,Bianchetto,Tuber borchii,Italy,limited,530,8 g,,,,`;
+    const quotation = parseSheetCsv(table, 'en');
+    expect(quotation.products).toHaveLength(2);
+    expect(quotation.products[0].name).toBe('Summer Truffle');
+    expect(quotation.products[0].grades[0].amount).toBe(140);
+    expect(quotation.products[1].latin).toBe('Tuber borchii');
+    expect(quotation.products[1].availability).toBe('limited');
   });
 });
