@@ -78,7 +78,7 @@ test('shows price, Shopify image and order actions without a presentation flow',
   const quotationSection = page.locator('#quotation');
   await expect(quotationSection.getByRole('heading', { name: 'Summer Truffle' })).toBeVisible();
   await expect(quotationSection.getByText('€140')).toBeVisible();
-  await expect(quotationSection.locator('.product-image')).toBeAttached();
+  await expect(quotationSection.locator('.product-image').first()).toBeAttached();
   await expect(quotationSection.getByRole('link', { name: /Order — Summer Truffle/ })).toBeVisible();
   await expect(quotationSection.getByRole('link', { name: /WhatsApp — Summer Truffle/ })).toBeVisible();
 });
