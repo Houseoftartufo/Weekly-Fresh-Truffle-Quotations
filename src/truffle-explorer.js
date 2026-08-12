@@ -1,3 +1,5 @@
+import './explorer-v3.css';
+
 const labels = {
   en: {
     view: 'View details', close: 'Close explorer', previous: 'Previous truffle', next: 'Next truffle', reserve: 'Reserve this batch',
