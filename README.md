@@ -1,129 +1,171 @@
 # House of Tartufo — Weekly Fresh Truffle Quotations v2
 
-Production-oriented redesign of the weekly fresh-truffle quotation experience.
+Production-oriented weekly fresh-truffle quotation experience.
 
 ## Product principles
 
-- Quotation first: prices are visible immediately, without a forced slide/presentation flow.
+- Quotation first: current prices are visible immediately.
 - Light premium visual system: ivory, warm white, espresso, truffle brown and champagne gold.
-- Safe data rendering: external Sheet values are inserted with DOM text nodes, never trusted as HTML.
-- Resilient pricing: serverless API -> published Google Sheet -> last known good browser cache.
-- Accessible by default: semantic sections, real buttons, visible focus, high-contrast text, mobile tap targets and reduced-motion support.
-- Conversion focused: each product has an order action and a pre-filled WhatsApp request.
+- Fully data-driven: each active truffle in the Sheet/Excel becomes a card automatically; removing or disabling it removes the card.
+- Adaptive layout: one, two, three or many products automatically change the grid.
+- Shopify imagery: the API can resolve the product page and featured image directly from `houseoftartufo.com`.
+- Safe rendering: Sheet values are inserted as text nodes, never trusted HTML.
+- Resilient data flow: API -> published Google Sheet -> last-known-good browser cache.
+- Product-specific order and pre-filled WhatsApp actions.
+- Accessible keyboard, touch and reduced-motion behaviour.
+
+## Primary languages
+
+Official language order:
+
+```text
+EN -> FR -> NL -> IT
+```
+
+English is the primary/default language. Resolution order:
+
+1. `?lang=` URL parameter
+2. saved user preference
+3. supported browser language
+4. English fallback
 
 ## Stack
 
 - Vite
 - Vanilla JavaScript ES modules
-- Zod for runtime validation
-- Papa Parse for CSV parsing
-- Vitest for unit tests
-- Playwright for critical browser journeys
-- Optional Vercel-style serverless endpoint in `api/quotations.js`
+- Zod runtime validation
+- Papa Parse CSV parsing
+- Vitest unit tests
+- Playwright critical journeys
+- Vercel serverless endpoint in `api/quotations.js`
 
 ## Development
 
 ```bash
 npm install
 npm run dev
-```
-
-Production build:
-
-```bash
-npm run build
-```
-
-Tests:
-
-```bash
 npm test
-npx playwright install chromium
+npm run build
 npm run test:e2e
 ```
 
 ## Data flow
 
-1. The client requests `/api/quotations?lang=it|en|fr|nl`.
-2. If the API is unavailable, the client reads the published Google Sheet CSV directly.
-3. CSV is parsed and normalized into a typed quotation model.
-4. A successful quotation is saved locally as a last-known-good fallback.
-5. If both live sources fail, the cached quotation is shown with an explicit degraded-data notice.
+1. Browser requests `/api/quotations?lang=en|fr|nl|it`.
+2. API reads the published Google Sheet CSV.
+3. Every active product found in the Sheet is normalized into the quotation model.
+4. The API enriches products with their House of Tartufo Shopify product URL and featured image when possible.
+5. The frontend renders the exact number of products returned.
+6. A valid quotation is cached as last-known-good.
+7. Image/catalog lookup failures never block prices.
 
-The API adds a 10-minute cache and `stale-while-revalidate` headers, avoiding the old two-minute polling loop.
+Quotation API cache: 10 minutes. Shopify enrichment cache: one hour.
 
-## Google Sheet contract
+## Recommended Excel / Google Sheet format
 
-The existing key-based format remains compatible. Columns are expected in this order:
+The recommended format is **one row = one truffle**.
+
+Example columns:
+
+```text
+active
+name_en
+name_fr
+name_nl
+name_it
+latin
+origin
+availability
+first_price
+first_detail
+second_price
+second_detail
+shopify_handle
+product_url
+image_url
+```
+
+Example:
+
+```text
+yes | Summer Black Truffle | ... | Tuber aestivum | Italy | available | 140 | 20-80 g | 120 | 5-20 g | italian-summer-truffle-fresh-tuber-aestivum
+```
+
+Behaviour:
+
+- add a row with `active=yes` -> a new card appears
+- set `active=no` -> card disappears
+- delete the row -> card disappears
+- change price -> quotation changes
+- change availability -> status changes
+- any number of product rows is supported
+
+`shopify_handle` is recommended because it gives a deterministic product/image match. If omitted, the server attempts to find the product on House of Tartufo using its scientific/product name. `product_url` and `image_url` can always be supplied explicitly as overrides.
+
+### Existing key/value Sheet remains compatible
+
+The old structure continues to work:
 
 ```text
 key,it,en,fr,nl
 ```
 
-Core product fields use `tN-*` keys. The parser now supports many products rather than stopping at four.
-
-Recommended fields:
+with fields such as:
 
 ```text
-week-label
-updated-at
-valid-until
-
 t1-attivo
-t1-id
 t1-nome
 t1-latin
 t1-prima
 t1-standard
-t1-unit
-t1-standard-unit
-t1-badge
-t1-desc
-t1-origin
-t1-availability
+...
 ```
 
-`availability` accepts values equivalent to available, limited or sold out. Unknown values safely default to available.
+Product numbering no longer needs to be continuous: `t1`, `t4`, `t17` are all discovered automatically.
 
-Prices should ideally be numeric (`140`) rather than presentation strings (`€140/kg`). The parser still accepts the legacy formatted values.
+## Prices
 
-## Internationalisation
+Use numeric values when possible:
 
-UI copy lives in `src/i18n.js` and product content remains driven by the language columns in the Sheet. Language priority is:
+```text
+140
+1250.50
+```
 
-1. `?lang=` URL parameter
-2. saved user preference
-3. browser language
-4. Italian fallback
+Legacy values such as `€140/kg` and European formatting are still accepted.
 
-Adding a new language no longer requires rewriting the page structure.
+## Shopify images
+
+The server enrichment strategy is:
+
+1. explicit `image_url` / `product_url` from the Sheet, if supplied
+2. exact `shopify_handle`, if supplied
+3. Shopify predictive product search using scientific/product name
+4. no image if no safe match is found
+
+The quotation remains fully usable if Shopify image enrichment is unavailable.
 
 ## Deployment safety
 
-The legacy `index.html.html` remains untouched on the refactor branch. The new application entry is `index.html`.
+The legacy `index.html.html` remains untouched on the refactor branch.
 
-Recommended flow:
+Recommended release flow:
 
 ```text
-feature/refactor branch -> preview deployment -> QA -> pull request -> main
+refactor branch -> CI -> preview -> visual QA -> PR -> main -> production
 ```
 
-Do not merge until the preview has been checked with the real production Sheet and the CI workflow is green.
+## CI coverage
 
-## CI
-
-`.github/workflows/ci.yml` runs:
-
-- unit tests
-- production build
-- Playwright desktop/mobile critical journeys
-
-## Key regressions covered
+GitHub Actions checks:
 
 - European price parsing
-- dynamic product counts above the previous four-item limit
-- inactive products
+- legacy Sheet compatibility
+- more than four products
+- gaps in legacy product numbering
+- row-per-product Excel model
+- active/inactive products
+- production build
 - language switching
-- product-level ordering actions
-- product-level WhatsApp actions
-- mobile quick-action bar
+- product-level order and WhatsApp actions
+- desktop/mobile Playwright journeys
