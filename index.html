@@ -1,23 +1,23 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#f5efe5" />
-  <meta name="description" content="Quotazioni settimanali House of Tartufo per tartufi freschi premium, disponibilità, qualità e spedizione professionale." />
+  <meta name="description" content="House of Tartufo weekly fresh truffle quotations: current prices, availability, origin, quality and professional shipping information." />
   <meta property="og:title" content="House of Tartufo — Weekly Fresh Truffle Quotations" />
   <meta property="og:description" content="Fresh truffle quotations updated weekly. Premium selection, professional thermal packaging and worldwide delivery." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://houseoftartufo.com" />
   <meta name="twitter:card" content="summary_large_image" />
-  <title>House of Tartufo — Quotazioni Settimanali</title>
+  <title>House of Tartufo — Weekly Fresh Truffle Quotations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/src/styles.css" />
 </head>
 <body>
-  <a class="skip-link" href="#quotation">Vai direttamente alle quotazioni</a>
+  <a class="skip-link" href="#quotation">Skip directly to quotations</a>
 
   <header class="site-header" data-header>
     <div class="container header-inner">
@@ -26,20 +26,20 @@
         <span class="brand-name">Tartufo</span>
       </a>
 
-      <div class="header-market" aria-label="Stato quotazione">
+      <div class="header-market" aria-label="Quotation status">
         <span class="market-dot" aria-hidden="true"></span>
-        <span data-i18n="header.market">Mercato settimanale</span>
+        <span data-i18n="header.market">Weekly market</span>
         <span class="header-updated" data-header-updated>—</span>
       </div>
 
       <div class="header-actions">
-        <div class="language-switcher" aria-label="Lingua">
-          <button type="button" class="lang-button is-active" data-lang="it" aria-pressed="true">IT</button>
-          <button type="button" class="lang-button" data-lang="en" aria-pressed="false">EN</button>
+        <div class="language-switcher" aria-label="Language">
+          <button type="button" class="lang-button is-active" data-lang="en" aria-pressed="true">EN</button>
           <button type="button" class="lang-button" data-lang="fr" aria-pressed="false">FR</button>
           <button type="button" class="lang-button" data-lang="nl" aria-pressed="false">NL</button>
+          <button type="button" class="lang-button" data-lang="it" aria-pressed="false">IT</button>
         </div>
-        <a class="button button-small button-dark" href="#quotation" data-i18n="header.cta">Vedi i prezzi</a>
+        <a class="button button-small button-dark" href="#quotation" data-i18n="header.cta">View prices</a>
       </div>
     </div>
   </header>
@@ -49,25 +49,25 @@
       <div class="container hero-grid">
         <div class="hero-copy">
           <p class="eyebrow" data-i18n="hero.eyebrow">Fresh Truffle Market · House of Tartufo</p>
-          <h1 id="hero-title" data-i18n-html="hero.title">Il prezzo giusto.<br><em>Questa settimana.</em></h1>
-          <p class="hero-lead" data-i18n="hero.lead">Quotazioni aggiornate dei tartufi freschi disponibili, con qualità, origine e condizioni di spedizione chiare.</p>
+          <h1 id="hero-title" data-i18n-html="hero.title">The right price.<br><em>This week.</em></h1>
+          <p class="hero-lead" data-i18n="hero.lead">Updated quotations for available fresh truffles, with clear quality, origin and shipping conditions.</p>
 
           <div class="hero-actions">
-            <a class="button button-primary" href="#quotation" data-i18n="hero.primary">Apri la quotazione</a>
-            <a class="button button-ghost" href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" data-whatsapp-general data-i18n="hero.secondary">Parla con noi</a>
+            <a class="button button-primary" href="#quotation" data-i18n="hero.primary">Open quotation</a>
+            <a class="button button-ghost" href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" data-whatsapp-general data-i18n="hero.secondary">Talk to us</a>
           </div>
 
           <div class="freshness" role="status" aria-live="polite">
             <span class="freshness-dot" aria-hidden="true"></span>
-            <span data-status-text data-i18n="status.loading">Caricamento quotazione aggiornata…</span>
+            <span data-status-text data-i18n="status.loading">Loading the latest quotation…</span>
           </div>
         </div>
 
-        <aside class="hero-note" aria-label="Informazioni di mercato">
+        <aside class="hero-note" aria-label="Market information">
           <div class="note-index">01</div>
           <div>
-            <p class="note-label" data-i18n="hero.noteLabel">Come funziona</p>
-            <p class="note-text" data-i18n="hero.noteText">Il tartufo fresco è un prodotto di mercato. Prezzi e disponibilità vengono aggiornati in base alla raccolta e alla qualità della settimana.</p>
+            <p class="note-label" data-i18n="hero.noteLabel">How it works</p>
+            <p class="note-text" data-i18n="hero.noteText">Fresh truffle is a market product. Prices and availability are updated according to the harvest and quality of the week.</p>
           </div>
         </aside>
       </div>
@@ -77,24 +77,24 @@
       <div class="container">
         <div class="section-heading">
           <div>
-            <p class="eyebrow" data-i18n="quotation.eyebrow">Quotazione corrente</p>
-            <h2 id="quotation-title" data-i18n-html="quotation.title">Fresh truffles.<br><em>Prezzi senza rumore.</em></h2>
+            <p class="eyebrow" data-i18n="quotation.eyebrow">Current quotation</p>
+            <h2 id="quotation-title" data-i18n-html="quotation.title">Fresh truffles.<br><em>Prices without noise.</em></h2>
           </div>
           <div class="quote-meta">
             <div>
-              <span data-i18n="quotation.validity">Validità</span>
+              <span data-i18n="quotation.validity">Validity</span>
               <strong data-validity>—</strong>
             </div>
             <div>
-              <span data-i18n="quotation.currency">Valuta</span>
+              <span data-i18n="quotation.currency">Currency</span>
               <strong>EUR / kg</strong>
             </div>
           </div>
         </div>
 
         <div class="notice notice-error" data-error hidden role="alert">
-          <strong data-i18n="error.title">Connessione dati non disponibile.</strong>
-          <span data-error-text data-i18n="error.fallback">Stiamo mostrando l'ultima quotazione confermata disponibile su questo dispositivo.</span>
+          <strong data-i18n="error.title">Live data connection unavailable.</strong>
+          <span data-error-text data-i18n="error.fallback">We are showing the latest confirmed quotation available on this device.</span>
         </div>
 
         <div class="quote-grid" data-product-grid aria-live="polite" aria-busy="true">
@@ -104,28 +104,28 @@
         </div>
 
         <div class="quote-footnote">
-          <p data-i18n="quotation.footnote">Disponibilità soggetta a conferma al momento dell'ordine. Per volumi ricorrenti prepariamo condizioni dedicate.</p>
-          <button class="text-button" type="button" data-copy-link data-i18n="quotation.copy">Copia link quotazione</button>
+          <p data-i18n="quotation.footnote">Availability is subject to confirmation when ordering. Dedicated conditions are available for recurring volumes.</p>
+          <button class="text-button" type="button" data-copy-link data-i18n="quotation.copy">Copy quotation link</button>
         </div>
       </div>
     </section>
 
-    <section class="service-strip" aria-label="Servizio House of Tartufo">
+    <section class="service-strip" aria-label="House of Tartufo service">
       <div class="container service-grid">
         <article>
           <span class="service-number">01</span>
-          <h3 data-i18n="services.freshTitle">Selezione fresca</h3>
-          <p data-i18n="services.freshText">Disponibilità verificata ogni settimana sulla raccolta reale.</p>
+          <h3 data-i18n="services.freshTitle">Fresh selection</h3>
+          <p data-i18n="services.freshText">Availability checked every week against the actual harvest.</p>
         </article>
         <article>
           <span class="service-number">02</span>
-          <h3 data-i18n="services.shippingTitle">Spedizione professionale</h3>
-          <p data-i18n="services.shippingText">Packaging termico e vettori express scelti in funzione della destinazione.</p>
+          <h3 data-i18n="services.shippingTitle">Professional shipping</h3>
+          <p data-i18n="services.shippingText">Thermal packaging and express carriers selected according to destination.</p>
         </article>
         <article>
           <span class="service-number">03</span>
-          <h3 data-i18n="services.partnerTitle">Pensato per professionisti</h3>
-          <p data-i18n="services.partnerText">Ristoranti, chef, buyer e partner ricorrenti possono richiedere quotazioni personalizzate.</p>
+          <h3 data-i18n="services.partnerTitle">Built for professionals</h3>
+          <p data-i18n="services.partnerText">Restaurants, chefs, buyers and recurring partners can request dedicated quotations.</p>
         </article>
       </div>
     </section>
@@ -133,12 +133,12 @@
     <section class="editorial" aria-labelledby="editorial-title">
       <div class="container editorial-grid">
         <div class="editorial-title-wrap">
-          <p class="eyebrow" data-i18n="story.eyebrow">Dal terreno alla cucina</p>
-          <h2 id="editorial-title" data-i18n-html="story.title">Meno intermediazioni.<br><em>Più controllo.</em></h2>
+          <p class="eyebrow" data-i18n="story.eyebrow">From soil to kitchen</p>
+          <h2 id="editorial-title" data-i18n-html="story.title">Fewer layers.<br><em>More control.</em></h2>
         </div>
         <div class="editorial-copy">
-          <p data-i18n="story.p1">Ogni settimana costruiamo la selezione in funzione della stagione, dell'origine e della qualità disponibile. Per questo la quotazione non viene trattata come un listino statico.</p>
-          <p data-i18n="story.p2">L'obiettivo è semplice: permettere a un professionista di capire rapidamente cosa è disponibile, quanto costa e come riceverlo.</p>
+          <p data-i18n="story.p1">Every week we build the selection around season, origin and available quality. The quotation is therefore not treated as a static price list.</p>
+          <p data-i18n="story.p2">The goal is simple: let a professional understand quickly what is available, what it costs and how to receive it.</p>
         </div>
       </div>
     </section>
@@ -146,21 +146,21 @@
     <section class="shipping-section" aria-labelledby="shipping-title">
       <div class="container shipping-card">
         <div>
-          <p class="eyebrow" data-i18n="shipping.eyebrow">Logistica</p>
-          <h2 id="shipping-title" data-i18n-html="shipping.title">Fresco significa<br><em>tempo sotto controllo.</em></h2>
+          <p class="eyebrow" data-i18n="shipping.eyebrow">Logistics</p>
+          <h2 id="shipping-title" data-i18n-html="shipping.title">Fresh means<br><em>time under control.</em></h2>
         </div>
         <div class="shipping-facts">
           <div>
-            <span data-i18n="shipping.euLabel">Unione Europea</span>
-            <strong data-i18n="shipping.euValue">Express · generalmente 1–2 giorni lavorativi</strong>
+            <span data-i18n="shipping.euLabel">European Union</span>
+            <strong data-i18n="shipping.euValue">Express · generally 1–2 working days</strong>
           </div>
           <div>
-            <span data-i18n="shipping.extraLabel">Extra UE / dogana</span>
-            <strong data-i18n="shipping.extraValue">Tempi variabili secondo destinazione e controlli</strong>
+            <span data-i18n="shipping.extraLabel">Outside EU / customs</span>
+            <strong data-i18n="shipping.extraValue">Timing varies according to destination and controls</strong>
           </div>
           <div>
             <span data-i18n="shipping.packLabel">Packaging</span>
-            <strong data-i18n="shipping.packValue">Termico professionale per prodotto fresco</strong>
+            <strong data-i18n="shipping.packValue">Professional thermal packaging for fresh product</strong>
           </div>
         </div>
       </div>
@@ -168,12 +168,12 @@
 
     <section class="final-cta" aria-labelledby="cta-title">
       <div class="container final-cta-inner">
-        <p class="eyebrow" data-i18n="cta.eyebrow">Questa settimana</p>
-        <h2 id="cta-title" data-i18n-html="cta.title">Hai trovato il prodotto giusto?<br><em>Blocca la disponibilità.</em></h2>
-        <p data-i18n="cta.text">Per ordini professionali, volumi ricorrenti o richieste specifiche possiamo preparare una proposta dedicata.</p>
+        <p class="eyebrow" data-i18n="cta.eyebrow">This week</p>
+        <h2 id="cta-title" data-i18n-html="cta.title">Found the right product?<br><em>Secure availability.</em></h2>
+        <p data-i18n="cta.text">For professional orders, recurring volumes or specific requests, we can prepare dedicated conditions.</p>
         <div class="hero-actions final-actions">
-          <a class="button button-primary" href="https://houseoftartufo.com" target="_blank" rel="noopener noreferrer" data-i18n="cta.site">Vai al sito</a>
-          <a class="button button-dark" href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" data-whatsapp-general data-i18n="cta.whatsapp">Richiedi su WhatsApp</a>
+          <a class="button button-primary" href="https://houseoftartufo.com" target="_blank" rel="noopener noreferrer" data-i18n="cta.site">Go to website</a>
+          <a class="button button-dark" href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" data-whatsapp-general data-i18n="cta.whatsapp">Request on WhatsApp</a>
         </div>
       </div>
     </section>
@@ -185,7 +185,7 @@
         <span class="footer-brand">House of Tartufo</span>
         <p data-i18n="footer.tagline">Italian truffles · Brussels, Belgium</p>
       </div>
-      <nav aria-label="Contatti">
+      <nav aria-label="Contact">
         <a href="https://houseoftartufo.com" target="_blank" rel="noopener noreferrer">houseoftartufo.com</a>
         <a href="mailto:admin@houseoftartufo.com">admin@houseoftartufo.com</a>
         <a href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer">WhatsApp</a>
@@ -193,9 +193,9 @@
     </div>
   </footer>
 
-  <div class="mobile-bar" aria-label="Azioni rapide">
+  <div class="mobile-bar" aria-label="Quick actions">
     <a href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" data-whatsapp-general data-i18n="mobile.whatsapp">WhatsApp</a>
-    <a href="#quotation" data-i18n="mobile.prices">Prezzi</a>
+    <a href="#quotation" data-i18n="mobile.prices">Prices</a>
   </div>
 
   <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
