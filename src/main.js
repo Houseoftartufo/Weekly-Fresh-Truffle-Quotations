@@ -3,6 +3,7 @@ import { t } from './i18n.js';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, resolveLanguage } from './language.js';
 import { bindPremiumMediaMotion, createTruffleExplorer, mediaViewLabel } from './truffle-explorer.js';
 import './product-images.css';
+import './landing-v3.css';
 import './explorer-v3.css';
 
 const state = {
@@ -19,7 +20,122 @@ const headerUpdated = document.querySelector('[data-header-updated]');
 const errorBanner = document.querySelector('[data-error]');
 const errorText = document.querySelector('[data-error-text]');
 const toast = document.querySelector('[data-toast]');
+const heroVisual = document.querySelector('[data-hero-visual]');
+const heroImage = document.querySelector('[data-hero-image]');
+const heroName = document.querySelector('[data-hero-name]');
+const heroLatin = document.querySelector('[data-hero-latin]');
+const heroOpen = document.querySelector('[data-hero-open]');
+const finalVisual = document.querySelector('[data-final-visual]');
+const finalImage = document.querySelector('[data-final-image]');
+const marketState = document.querySelector('[data-market-state]');
+const marketOrigin = document.querySelector('[data-market-origin]');
+const marketProduct = document.querySelector('[data-market-product]');
+const marketAvailability = document.querySelector('[data-market-availability]');
+const marketCount = document.querySelector('[data-market-count]');
 let explorer = null;
+
+const v3Copy = {
+  en: {
+    'nav.weekly': 'Weekly quotations',
+    'nav.truffles': 'Our truffles',
+    'nav.shipping': 'Shipping',
+    'hero.professionals': 'Built for chefs, restaurants, retailers and purchasing teams.',
+    'hero.inspect': 'View details',
+    'market.update': 'Market update',
+    'market.origin': 'Origin',
+    'market.availability': 'Availability',
+    'market.validity': 'Validity',
+    'market.currency': 'Currency',
+    'market.livePrice': 'Live weekly quotation',
+    'market.perKg': 'Prices per kg',
+    'quotation.dynamic': 'The selection adapts automatically to what is available this week.',
+    live: 'LIVE',
+    cached: 'CONFIRMED',
+    available: 'GOOD',
+    limited: 'LIMITED',
+    soldOut: 'SOLD OUT',
+    oneProduct: '1 variety available',
+    products: (count) => `${count} varieties available`
+  },
+  fr: {
+    'nav.weekly': 'Cotations',
+    'nav.truffles': 'Nos truffes',
+    'nav.shipping': 'Livraison',
+    'hero.professionals': 'Pensé pour chefs, restaurants, revendeurs et équipes achats.',
+    'hero.inspect': 'Voir les détails',
+    'market.update': 'Marché',
+    'market.origin': 'Origine',
+    'market.availability': 'Disponibilité',
+    'market.validity': 'Validité',
+    'market.currency': 'Devise',
+    'market.livePrice': 'Cotation hebdomadaire',
+    'market.perKg': 'Prix au kg',
+    'quotation.dynamic': 'La sélection s’adapte automatiquement aux produits disponibles cette semaine.',
+    live: 'EN DIRECT',
+    cached: 'CONFIRMÉE',
+    available: 'BONNE',
+    limited: 'LIMITÉE',
+    soldOut: 'ÉPUISÉ',
+    oneProduct: '1 variété disponible',
+    products: (count) => `${count} variétés disponibles`
+  },
+  nl: {
+    'nav.weekly': 'Weekprijzen',
+    'nav.truffles': 'Onze truffels',
+    'nav.shipping': 'Verzending',
+    'hero.professionals': 'Gebouwd voor chefs, restaurants, retailers en inkoopteams.',
+    'hero.inspect': 'Bekijk details',
+    'market.update': 'Marktupdate',
+    'market.origin': 'Herkomst',
+    'market.availability': 'Beschikbaarheid',
+    'market.validity': 'Geldigheid',
+    'market.currency': 'Valuta',
+    'market.livePrice': 'Wekelijkse notering',
+    'market.perKg': 'Prijzen per kg',
+    'quotation.dynamic': 'De selectie past zich automatisch aan aan wat deze week beschikbaar is.',
+    live: 'LIVE',
+    cached: 'BEVESTIGD',
+    available: 'GOED',
+    limited: 'BEPERKT',
+    soldOut: 'UITVERKOCHT',
+    oneProduct: '1 variëteit beschikbaar',
+    products: (count) => `${count} variëteiten beschikbaar`
+  },
+  it: {
+    'nav.weekly': 'Quotazioni',
+    'nav.truffles': 'I nostri tartufi',
+    'nav.shipping': 'Spedizione',
+    'hero.professionals': 'Pensato per chef, ristoranti, retailer e team acquisti.',
+    'hero.inspect': 'Vedi dettagli',
+    'market.update': 'Mercato',
+    'market.origin': 'Origine',
+    'market.availability': 'Disponibilità',
+    'market.validity': 'Validità',
+    'market.currency': 'Valuta',
+    'market.livePrice': 'Quotazione settimanale',
+    'market.perKg': 'Prezzi al kg',
+    'quotation.dynamic': 'La selezione si adatta automaticamente a ciò che è disponibile questa settimana.',
+    live: 'LIVE',
+    cached: 'CONFERMATA',
+    available: 'BUONA',
+    limited: 'LIMITATA',
+    soldOut: 'ESAURITO',
+    oneProduct: '1 varietà disponibile',
+    products: (count) => `${count} varietà disponibili`
+  }
+};
+
+function v3(language = state.language) {
+  return v3Copy[language] || v3Copy.en;
+}
+
+function applyV3Translations(language) {
+  const dictionary = v3(language);
+  document.querySelectorAll('[data-v3-i18n]').forEach((element) => {
+    const value = dictionary[element.dataset.v3I18n];
+    if (typeof value === 'string') element.textContent = value;
+  });
+}
 
 function applyTranslations(language) {
   document.documentElement.lang = language;
@@ -35,6 +151,7 @@ function applyTranslations(language) {
     button.classList.toggle('is-active', active);
     button.setAttribute('aria-pressed', String(active));
   });
+  applyV3Translations(language);
   document.title = {
     en: 'House of Tartufo — Weekly Fresh Truffle Quotations',
     fr: 'House of Tartufo — Cotations Hebdomadaires',
@@ -79,6 +196,14 @@ function create(tag, className, text) {
   return element;
 }
 
+function availabilityLabelKey(product) {
+  return {
+    available: 'product.available',
+    limited: 'product.limited',
+    'sold-out': 'product.soldOut'
+  }[product?.availability] || 'product.available';
+}
+
 function buildWhatsappMessage(product) {
   const language = state.language;
   const first = product.grades.find((grade) => grade.id === 'first-choice') ?? product.grades[0];
@@ -93,7 +218,7 @@ function buildWhatsappMessage(product) {
 }
 
 function primaryImage(product) {
-  return product.imageUrl || product.gallery?.find((item) => item?.url)?.url || null;
+  return product?.imageUrl || product?.gallery?.find((item) => item?.url)?.url || null;
 }
 
 function buildProductMedia(product, index) {
@@ -133,7 +258,7 @@ function buildProductCard(product, index) {
 
   const top = create('div', 'product-top');
   const badge = create('span', 'product-badge', product.badge || t(state.language, 'product.selected'));
-  const origin = create('span', 'product-origin', product.origin || t(state.language, 'product.origin'));
+  const origin = create('span', 'product-origin', product.origin || '—');
   top.append(badge, origin);
 
   const title = create('h3', 'product-name', product.name);
@@ -177,12 +302,7 @@ function buildProductCard(product, index) {
   const availability = create('div', `availability is-${product.availability}`);
   const availabilityDot = create('span', 'availability-dot');
   availabilityDot.setAttribute('aria-hidden', 'true');
-  const availabilityLabel = {
-    available: 'product.available',
-    limited: 'product.limited',
-    'sold-out': 'product.soldOut'
-  }[product.availability] || 'product.available';
-  availability.append(availabilityDot, document.createTextNode(t(state.language, availabilityLabel)));
+  availability.append(availabilityDot, document.createTextNode(t(state.language, availabilityLabelKey(product))));
 
   content.append(top, title, latin, description, grades, actions, availability);
   if (media) article.append(media);
@@ -198,6 +318,74 @@ function renderProducts(quotation) {
   state.displayProducts.forEach((product, index) => grid.append(buildProductCard(product, index)));
   grid.setAttribute('aria-busy', 'false');
   explorer?.sync();
+}
+
+function setDynamicImage({ wrapper, image, url, alt }) {
+  if (!wrapper || !image) return;
+  if (!url) {
+    wrapper.hidden = true;
+    image.removeAttribute('src');
+    image.alt = '';
+    return;
+  }
+  wrapper.hidden = false;
+  image.src = url;
+  image.alt = alt || '';
+}
+
+function renderV3Stage(quotation, degraded) {
+  const product = state.displayProducts[0] || quotation.products?.[0] || null;
+  const dictionary = v3();
+  const imageUrl = primaryImage(product);
+  const finalUrl = product?.gallery?.find((item, index) => index > 0 && item?.url)?.url || imageUrl;
+
+  setDynamicImage({
+    wrapper: heroVisual,
+    image: heroImage,
+    url: imageUrl,
+    alt: product?.imageAlt || product?.name || ''
+  });
+  if (heroName) heroName.textContent = product?.name || '—';
+  if (heroLatin) heroLatin.textContent = product?.latin || '';
+  if (heroOpen) heroOpen.setAttribute('aria-label', product ? mediaViewLabel(state.language, product.name) : dictionary['hero.inspect']);
+
+  setDynamicImage({
+    wrapper: finalVisual,
+    image: finalImage,
+    url: finalUrl,
+    alt: product?.imageAlt || product?.name || ''
+  });
+
+  if (marketState) marketState.textContent = degraded ? dictionary.cached : dictionary.live;
+  if (marketOrigin) marketOrigin.textContent = product?.origin || '—';
+  if (marketProduct) marketProduct.textContent = product?.latin || product?.name || '—';
+
+  if (marketAvailability) {
+    const status = product?.availability || 'available';
+    marketAvailability.className = `market-availability is-${status}`;
+    marketAvailability.textContent = status === 'limited'
+      ? dictionary.limited
+      : status === 'sold-out'
+        ? dictionary.soldOut
+        : dictionary.available;
+  }
+
+  if (marketCount) {
+    const count = state.displayProducts.length;
+    marketCount.textContent = count === 1 ? dictionary.oneProduct : dictionary.products(count);
+  }
+}
+
+function clearV3Stage() {
+  setDynamicImage({ wrapper: heroVisual, image: heroImage, url: null, alt: '' });
+  setDynamicImage({ wrapper: finalVisual, image: finalImage, url: null, alt: '' });
+  if (heroName) heroName.textContent = '—';
+  if (heroLatin) heroLatin.textContent = '';
+  if (marketState) marketState.textContent = '—';
+  if (marketOrigin) marketOrigin.textContent = '—';
+  if (marketProduct) marketProduct.textContent = '—';
+  if (marketAvailability) marketAvailability.textContent = '—';
+  if (marketCount) marketCount.textContent = '—';
 }
 
 function renderSkeleton() {
@@ -217,6 +405,7 @@ function showEmptyState() {
   grid.setAttribute('aria-busy', 'false');
   const empty = create('div', 'notice notice-error', t(state.language, 'error.empty'));
   grid.append(empty);
+  clearV3Stage();
 }
 
 function renderMeta(quotation, degraded) {
@@ -259,6 +448,7 @@ async function refreshQuotation() {
   }
   renderProducts(quotation);
   renderMeta(quotation, degraded);
+  renderV3Stage(quotation, degraded);
 }
 
 function updateGeneralWhatsapp() {
@@ -312,6 +502,10 @@ function bindEvents() {
       showToast(t(state.language, 'quotation.copied'));
     }
   });
+
+  heroOpen?.addEventListener('click', () => explorer?.open(0, heroOpen));
+  heroImage?.addEventListener('error', () => { if (heroVisual) heroVisual.hidden = true; });
+  finalImage?.addEventListener('error', () => { if (finalVisual) finalVisual.hidden = true; });
 
   const header = document.querySelector('[data-header]');
   const updateHeader = () => header?.classList.toggle('is-scrolled', window.scrollY > 12);
