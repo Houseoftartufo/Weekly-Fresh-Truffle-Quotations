@@ -133,10 +133,12 @@ function parseTabularSheet(rows, language) {
   const products = [];
 
   for (const record of records) {
+    if (normalizeHeader(firstValue(record, ['row_type', 'type'])) === 'meta') continue;
     if (!isActive(firstValue(record, ['active', 'attivo', 'enabled'], 'yes'))) continue;
 
     const name = firstValue(record, [
       `name_${language}`, `nome_${language}`,
+      'name_en', 'nome_en',
       'name_it', 'nome_it',
       'name', 'nome'
     ]);
@@ -146,6 +148,7 @@ function parseTabularSheet(rows, language) {
     const resolvedName = name || latin;
     const description = firstValue(record, [
       `description_${language}`, `desc_${language}`,
+      'description_en', 'desc_en',
       'description_it', 'desc_it',
       'description', 'desc'
     ]);
@@ -176,7 +179,7 @@ function parseTabularSheet(rows, language) {
     });
   }
 
-  const meta = records.find((record) => normalizeHeader(firstValue(record, ['row_type', 'type'])) === 'meta') || {};
+  const meta = records.find((record) => normalizeHeader(firstValue(record, ['row_type', 'type'])) === 'meta') || records[0] || {};
   return {
     marketLabel: firstValue(meta, ['week_label', 'week', 'market_label']),
     updatedAt: firstValue(meta, ['updated_at', 'last_updated']) || null,
@@ -186,7 +189,7 @@ function parseTabularSheet(rows, language) {
 }
 
 function parseLegacyKeyValueSheet(rows, language) {
-  const col = languageColumn[language] ?? languageColumn.it;
+  const col = languageColumn[language] ?? languageColumn.en;
   const data = {};
 
   rows.slice(1).forEach((row) => {
@@ -194,11 +197,11 @@ function parseLegacyKeyValueSheet(rows, language) {
     const key = String(row[0] ?? '').trim().toLowerCase();
     if (!key) return;
     const translated = String(row[col] ?? '').trim();
-    const fallback = String(row[languageColumn.it] ?? '').trim();
-    data[key] = translated || fallback;
+    const englishFallback = String(row[languageColumn.en] ?? '').trim();
+    const italianFallback = String(row[languageColumn.it] ?? '').trim();
+    data[key] = translated || englishFallback || italianFallback;
   });
 
-  // Discover every product index present in the sheet. Gaps are allowed: t1, t3, t9 all work.
   const indexes = [...new Set(
     Object.keys(data)
       .map((key) => key.match(/^t(\d+)-(?:nome|latin|prima|standard|attivo|id|shopify-handle|product-url|image-url)$/)?.[1])
@@ -244,7 +247,7 @@ function parseLegacyKeyValueSheet(rows, language) {
   };
 }
 
-export function parseSheetCsv(csv, language = 'it') {
+export function parseSheetCsv(csv, language = 'en') {
   const parsed = Papa.parse(csv, {
     header: false,
     skipEmptyLines: 'greedy',
@@ -326,7 +329,7 @@ function readCache(language) {
   }
 }
 
-export async function loadQuotation(language = 'it') {
+export async function loadQuotation(language = 'en') {
   const errors = [];
 
   try {
