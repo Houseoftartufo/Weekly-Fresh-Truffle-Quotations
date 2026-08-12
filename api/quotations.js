@@ -64,18 +64,60 @@ function readMeta(html, property) {
   return null;
 }
 
+function dedupeGallery(items = []) {
+  const seen = new Set();
+  const result = [];
+  for (const item of items) {
+    const url = normalizeUrl(typeof item === 'string' ? item : item?.url || item?.src);
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    result.push({ url, alt: typeof item === 'string' ? '' : String(item?.alt || '') });
+  }
+  return result;
+}
+
+function handleFromProductUrl(url) {
+  try {
+    const parsed = new URL(url, STORE_ORIGIN);
+    return parsed.pathname.match(/\/products\/([^/?#]+)/i)?.[1] || null;
+  } catch {
+    return null;
+  }
+}
+
 async function productMetaFromPage(url) {
   if (!url) return {};
   const response = await fetch(url, {
-    headers: { Accept: 'text/html', 'User-Agent': 'HouseOfTartufo-Quotation/2.0' },
+    headers: { Accept: 'text/html', 'User-Agent': 'HouseOfTartufo-Quotation/3.0' },
     signal: AbortSignal.timeout(4500)
   });
   if (!response.ok) throw new Error(`Shopify product page HTTP ${response.status}`);
   const html = await response.text();
+  const imageUrl = normalizeUrl(readMeta(html, 'og:image'));
+  const imageAlt = readMeta(html, 'og:image:alt') || null;
   return {
     productUrl: normalizeUrl(readMeta(html, 'og:url')) || url,
-    imageUrl: normalizeUrl(readMeta(html, 'og:image')),
-    imageAlt: readMeta(html, 'og:image:alt') || null
+    imageUrl,
+    imageAlt,
+    gallery: imageUrl ? [{ url: imageUrl, alt: imageAlt || '' }] : []
+  };
+}
+
+async function productJsonFromHandle(handle) {
+  if (!handle) return {};
+  const response = await fetch(`${STORE_ORIGIN}/products/${encodeURIComponent(handle)}.js`, {
+    headers: { Accept: 'application/json', 'User-Agent': 'HouseOfTartufo-Quotation/3.0' },
+    signal: AbortSignal.timeout(4500)
+  });
+  if (!response.ok) throw new Error(`Shopify product JSON HTTP ${response.status}`);
+  const data = await response.json();
+  const gallery = dedupeGallery(data?.images || data?.media || []);
+  const featured = normalizeUrl(data?.featured_image || gallery[0]?.url);
+  return {
+    productUrl: `${STORE_ORIGIN}/products/${encodeURIComponent(handle)}`,
+    imageUrl: featured || gallery[0]?.url || null,
+    imageAlt: data?.title || null,
+    gallery: gallery.length ? gallery : featured ? [{ url: featured, alt: data?.title || '' }] : []
   };
 }
 
@@ -89,7 +131,7 @@ async function predictiveProduct(product) {
   params.set('resources[options][unavailable_products]', 'show');
 
   const response = await fetch(`${STORE_ORIGIN}/search/suggest.json?${params}`, {
-    headers: { Accept: 'application/json', 'User-Agent': 'HouseOfTartufo-Quotation/2.0' },
+    headers: { Accept: 'application/json', 'User-Agent': 'HouseOfTartufo-Quotation/3.0' },
     signal: AbortSignal.timeout(4500)
   });
   if (!response.ok) throw new Error(`Shopify predictive search HTTP ${response.status}`);
@@ -106,26 +148,45 @@ async function lookupShopifyProduct(product) {
 
   let result = {};
   try {
-    if (product.shopifyHandle) {
-      const url = `${STORE_ORIGIN}/products/${encodeURIComponent(product.shopifyHandle)}`;
-      result = await productMetaFromPage(url);
-    } else {
+    let handle = product.shopifyHandle || handleFromProductUrl(product.productUrl);
+
+    if (!handle) {
       const match = await predictiveProduct(product);
       if (match) {
+        const matchUrl = normalizeUrl(match.url);
+        handle = handleFromProductUrl(matchUrl);
         result = {
-          productUrl: normalizeUrl(match.url),
+          productUrl: matchUrl,
           imageUrl: normalizeUrl(match.featured_image?.url || match.featured_image || match.image),
-          imageAlt: match.featured_image?.alt || match.title || null
+          imageAlt: match.featured_image?.alt || match.title || null,
+          gallery: []
         };
-        if (!result.imageUrl && result.productUrl) {
-          result = { ...result, ...(await productMetaFromPage(result.productUrl)) };
-        }
       }
+    }
+
+    if (handle) {
+      try {
+        const jsonProduct = await productJsonFromHandle(handle);
+        result = {
+          ...result,
+          ...jsonProduct,
+          productUrl: result.productUrl || jsonProduct.productUrl
+        };
+      } catch {
+        const pageUrl = result.productUrl || `${STORE_ORIGIN}/products/${encodeURIComponent(handle)}`;
+        result = { ...result, ...(await productMetaFromPage(pageUrl)) };
+      }
+    } else if (result.productUrl) {
+      result = { ...result, ...(await productMetaFromPage(result.productUrl)) };
     }
   } catch {
     // Image enrichment must never make the weekly quotation unavailable.
   }
 
+  result.gallery = dedupeGallery([
+    ...(result.imageUrl ? [{ url: result.imageUrl, alt: result.imageAlt || '' }] : []),
+    ...(result.gallery || [])
+  ]);
   shopifyCache.set(cacheKey, { value: result, savedAt: Date.now() });
   return result;
 }
@@ -136,12 +197,20 @@ async function enrichProducts(products) {
   for (let start = 0; start < products.length; start += concurrency) {
     const chunk = products.slice(start, start + concurrency);
     const results = await Promise.all(chunk.map(async (product) => {
-      if (product.imageUrl && product.productUrl) return product;
       const shopify = await lookupShopifyProduct(product);
+      const imageUrl = product.imageUrl || shopify.imageUrl || null;
+      const imageAlt = product.imageAlt || shopify.imageAlt || product.name;
+      const gallery = dedupeGallery([
+        ...(imageUrl ? [{ url: imageUrl, alt: imageAlt }] : []),
+        ...(product.gallery || []),
+        ...(shopify.gallery || [])
+      ]).map((item) => ({ ...item, alt: item.alt || imageAlt }));
+
       return {
         ...product,
-        imageUrl: product.imageUrl || shopify.imageUrl || null,
-        imageAlt: product.imageAlt || shopify.imageAlt || product.name,
+        imageUrl,
+        imageAlt,
+        gallery,
         productUrl: product.productUrl || shopify.productUrl || null
       };
     }));
