@@ -15,6 +15,7 @@ describe('parseSheetCsv', () => {
 week-label,Settimana 33,Week 33,Semaine 33,Week 33
 updated-at,2026-08-12T08:15:00+02:00,2026-08-12T08:15:00+02:00,2026-08-12T08:15:00+02:00,2026-08-12T08:15:00+02:00
 t1-attivo,si,yes,oui,ja
+t1-featured,si,yes,oui,ja
 t1-nome,Tartufo Estivo,Summer Truffle,Truffe d'été,Zomertruffel
 t1-latin,Tuber aestivum,Tuber aestivum,Tuber aestivum,Tuber aestivum
 t1-prima,140,140,140,140
@@ -22,6 +23,7 @@ t1-standard,120,120,120,120
 t1-unit,20–80 g,20–80 g,20–80 g,20–80 g
 t1-desc,Fresco questa settimana,Fresh this week,Fraîche cette semaine,Vers deze week
 t1-shopify-handle,italian-summer-truffle-fresh-tuber-aestivum,italian-summer-truffle-fresh-tuber-aestivum,italian-summer-truffle-fresh-tuber-aestivum,italian-summer-truffle-fresh-tuber-aestivum
+t1-image-url,https://cdn.example.com/summer.jpg,https://cdn.example.com/summer.jpg,https://cdn.example.com/summer.jpg,https://cdn.example.com/summer.jpg
 t2-attivo,no,no,non,nee
 t2-nome,Tartufo Nero,Black Truffle,Truffe Noire,Zwarte Truffel`;
 
@@ -33,6 +35,10 @@ t2-nome,Tartufo Nero,Black Truffle,Truffe Noire,Zwarte Truffel`;
     expect(quotation.products[0].grades[0].amount).toBe(140);
     expect(quotation.products[0].grades[1].amount).toBe(120);
     expect(quotation.products[0].shopifyHandle).toBe('italian-summer-truffle-fresh-tuber-aestivum');
+    expect(quotation.products[0].featured).toBe(true);
+    expect(quotation.products[0].gallery).toEqual([
+      { url: 'https://cdn.example.com/summer.jpg', alt: 'Summer Truffle' }
+    ]);
   });
 
   it('supports more than the previous four-product hard limit', () => {
@@ -57,14 +63,16 @@ t17-prima,2000,2000,2000,2000`;
   });
 
   it('supports a one-row-per-product Excel/Sheet model', () => {
-    const table = `active,name_it,name_en,name_fr,name_nl,latin,origin,availability,first_price,first_detail,second_price,second_detail,shopify_handle
-yes,Tartufo Estivo,Summer Truffle,Truffe d'été,Zomertruffel,Tuber aestivum,Italy,available,140,20-80 g,120,5-20 g,italian-summer-truffle-fresh-tuber-aestivum
-no,Tartufo Bianco,White Truffle,Truffe blanche,Witte truffel,Tuber magnatum,Italy,sold-out,2500,15 g,,,,
-yes,Bianchetto,Bianchetto,Bianchetto,Bianchetto,Tuber borchii,Italy,limited,530,8 g,,,,`;
+    const table = `active,featured,name_it,name_en,name_fr,name_nl,latin,origin,availability,first_price,first_detail,second_price,second_detail,shopify_handle,image_url
+yes,yes,Tartufo Estivo,Summer Truffle,Truffe d'été,Zomertruffel,Tuber aestivum,Italy,available,140,20-80 g,120,5-20 g,italian-summer-truffle-fresh-tuber-aestivum,https://cdn.example.com/summer.jpg
+no,no,Tartufo Bianco,White Truffle,Truffe blanche,Witte truffel,Tuber magnatum,Italy,sold-out,2500,15 g,,,,,
+yes,no,Bianchetto,Bianchetto,Bianchetto,Bianchetto,Tuber borchii,Italy,limited,530,8 g,,,,,`;
     const quotation = parseSheetCsv(table, 'en');
     expect(quotation.products).toHaveLength(2);
     expect(quotation.products[0].name).toBe('Summer Truffle');
     expect(quotation.products[0].grades[0].amount).toBe(140);
+    expect(quotation.products[0].featured).toBe(true);
+    expect(quotation.products[0].gallery).toHaveLength(1);
     expect(quotation.products[1].latin).toBe('Tuber borchii');
     expect(quotation.products[1].availability).toBe('limited');
   });
