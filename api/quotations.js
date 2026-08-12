@@ -1,6 +1,6 @@
 import { parseSheetCsv, SHEET_CSV_URL } from '../src/data.js';
 
-const SUPPORTED = new Set(['it', 'en', 'fr', 'nl']);
+const SUPPORTED = new Set(['en', 'fr', 'nl', 'it']);
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const SHOPIFY_CACHE_TTL_MS = 60 * 60 * 1000;
 const STORE_ORIGIN = 'https://houseoftartufo.com';
@@ -151,7 +151,7 @@ async function enrichProducts(products) {
 }
 
 export default async function handler(req, res) {
-  const language = SUPPORTED.has(req.query?.lang) ? req.query.lang : 'it';
+  const language = SUPPORTED.has(req.query?.lang) ? req.query.lang : 'en';
   const cached = getCached(language);
 
   if (cached) {
