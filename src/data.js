@@ -18,6 +18,10 @@ const ProductSchema = z.object({
   origin: z.string().default(''),
   badge: z.string().default(''),
   availability: z.enum(['available', 'limited', 'sold-out']).default('available'),
+  shopifyHandle: z.string().default(''),
+  productUrl: z.string().nullable().default(null),
+  imageUrl: z.string().nullable().default(null),
+  imageAlt: z.string().default(''),
   grades: z.array(GradeSchema).min(1)
 });
 
@@ -32,7 +36,8 @@ export const QuotationSchema = z.object({
 });
 
 const languageColumn = { it: 1, en: 2, fr: 3, nl: 4 };
-const truthy = new Set(['si', 'sì', 'yes', 'oui', 'ja', '1', 'true']);
+const truthy = new Set(['si', 'sì', 'yes', 'oui', 'ja', '1', 'true', 'x', 'on', 'active']);
+const falsey = new Set(['no', '0', 'false', 'off', 'inactive', 'disattivo', 'non']);
 
 export function parsePrice(value) {
   if (value == null) return null;
@@ -55,14 +60,188 @@ function slugify(value) {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '') || `product-${Date.now()}`;
+    .replace(/^-|-$/g, '') || 'fresh-truffle';
+}
+
+function normalizeHeader(value) {
+  return String(value || '')
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
 }
 
 function parseAvailability(value) {
   const v = String(value || '').trim().toLowerCase();
-  if (['sold out', 'sold-out', 'esaurito', 'épuisé', 'uitverkocht', 'no', '0', 'false'].includes(v)) return 'sold-out';
-  if (['limited', 'limitato', 'limitata', 'limité', 'beperkt'].includes(v)) return 'limited';
+  if (['sold out', 'sold-out', 'esaurito', 'épuisé', 'epuise', 'uitverkocht', 'no', '0', 'false'].includes(v)) return 'sold-out';
+  if (['limited', 'limitato', 'limitata', 'limité', 'limite', 'beperkt'].includes(v)) return 'limited';
   return 'available';
+}
+
+function isActive(value, defaultValue = true) {
+  const v = String(value ?? '').trim().toLowerCase();
+  if (!v) return defaultValue;
+  if (truthy.has(v)) return true;
+  if (falsey.has(v)) return false;
+  return defaultValue;
+}
+
+function firstValue(record, keys, fallback = '') {
+  for (const key of keys) {
+    const value = record[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') return String(value).trim();
+  }
+  return fallback;
+}
+
+function buildGrades(firstRaw, secondRaw, firstDetail = '', secondDetail = '') {
+  const firstAmount = parsePrice(firstRaw);
+  const secondAmount = parsePrice(secondRaw);
+  const grades = [];
+
+  if (firstAmount !== null || String(firstRaw || '').trim()) {
+    grades.push({ id: 'first-choice', labelKey: 'product.first', detail: firstDetail, amount: firstAmount });
+  }
+  if (secondAmount !== null || String(secondRaw || '').trim()) {
+    grades.push({ id: 'second-choice', labelKey: 'product.second', detail: secondDetail, amount: secondAmount });
+  }
+  if (!grades.length) grades.push({ id: 'first-choice', labelKey: 'product.first', detail: firstDetail, amount: null });
+  return grades;
+}
+
+function normalizeExternalUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  if (raw.startsWith('//')) return `https:${raw}`;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('/')) return `https://houseoftartufo.com${raw}`;
+  return raw;
+}
+
+function looksLikeTabularSheet(rows) {
+  const headers = (rows[0] || []).map(normalizeHeader);
+  const hasName = headers.some((header) => ['name', 'nome', 'name_it', 'nome_it', 'latin'].includes(header));
+  const hasProductField = headers.some((header) => ['first_price', 'prima', 'price_1', 'availability', 'shopify_handle', 'product_url'].includes(header));
+  return hasName && hasProductField;
+}
+
+function parseTabularSheet(rows, language) {
+  const headers = rows[0].map(normalizeHeader);
+  const records = rows.slice(1).map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index]])));
+  const products = [];
+
+  for (const record of records) {
+    if (!isActive(firstValue(record, ['active', 'attivo', 'enabled'], 'yes'))) continue;
+
+    const name = firstValue(record, [
+      `name_${language}`, `nome_${language}`,
+      'name_it', 'nome_it',
+      'name', 'nome'
+    ]);
+    const latin = firstValue(record, ['latin', 'scientific_name', 'nome_scientifico']);
+    if (!name && !latin) continue;
+
+    const resolvedName = name || latin;
+    const description = firstValue(record, [
+      `description_${language}`, `desc_${language}`,
+      'description_it', 'desc_it',
+      'description', 'desc'
+    ]);
+    const origin = firstValue(record, [`origin_${language}`, `origine_${language}`, 'origin', 'origine']);
+    const badge = firstValue(record, [`badge_${language}`, 'badge']);
+    const handle = firstValue(record, ['shopify_handle', 'product_handle', 'handle']);
+    const imageUrl = normalizeExternalUrl(firstValue(record, ['image_url', 'image', 'featured_image']));
+    const productUrl = normalizeExternalUrl(firstValue(record, ['product_url', 'shopify_url', 'url']));
+
+    products.push({
+      id: firstValue(record, ['id', 'product_id'], slugify(latin || resolvedName)),
+      name: resolvedName,
+      latin,
+      description,
+      origin,
+      badge,
+      availability: parseAvailability(firstValue(record, ['availability', 'disponibilita', 'stock'])),
+      shopifyHandle: handle,
+      productUrl,
+      imageUrl,
+      imageAlt: firstValue(record, [`image_alt_${language}`, 'image_alt'], resolvedName),
+      grades: buildGrades(
+        firstValue(record, ['first_price', 'prima', 'price_1', 'first_choice']),
+        firstValue(record, ['second_price', 'standard', 'price_2', 'second_choice']),
+        firstValue(record, ['first_detail', 'prima_unit', 'unit', 'size_1']),
+        firstValue(record, ['second_detail', 'standard_unit', 'size_2'])
+      )
+    });
+  }
+
+  const meta = records.find((record) => normalizeHeader(firstValue(record, ['row_type', 'type'])) === 'meta') || {};
+  return {
+    marketLabel: firstValue(meta, ['week_label', 'week', 'market_label']),
+    updatedAt: firstValue(meta, ['updated_at', 'last_updated']) || null,
+    validUntil: firstValue(meta, ['valid_until']) || null,
+    products
+  };
+}
+
+function parseLegacyKeyValueSheet(rows, language) {
+  const col = languageColumn[language] ?? languageColumn.it;
+  const data = {};
+
+  rows.slice(1).forEach((row) => {
+    if (!Array.isArray(row)) return;
+    const key = String(row[0] ?? '').trim().toLowerCase();
+    if (!key) return;
+    const translated = String(row[col] ?? '').trim();
+    const fallback = String(row[languageColumn.it] ?? '').trim();
+    data[key] = translated || fallback;
+  });
+
+  // Discover every product index present in the sheet. Gaps are allowed: t1, t3, t9 all work.
+  const indexes = [...new Set(
+    Object.keys(data)
+      .map((key) => key.match(/^t(\d+)-(?:nome|latin|prima|standard|attivo|id|shopify-handle|product-url|image-url)$/)?.[1])
+      .filter(Boolean)
+      .map(Number)
+  )].sort((a, b) => a - b);
+
+  const products = [];
+  for (const i of indexes) {
+    const prefix = `t${i}`;
+    const name = String(data[`${prefix}-nome`] || '').trim();
+    const latin = String(data[`${prefix}-latin`] || '').trim();
+    if (!name && !latin) continue;
+    if (!isActive(data[`${prefix}-attivo`], true)) continue;
+
+    const resolvedName = name || latin;
+    products.push({
+      id: String(data[`${prefix}-id`] || slugify(latin || resolvedName)),
+      name: resolvedName,
+      latin,
+      description: String(data[`${prefix}-desc`] || '').trim(),
+      origin: String(data[`${prefix}-origin`] || '').trim(),
+      badge: String(data[`${prefix}-badge`] || '').trim(),
+      availability: parseAvailability(data[`${prefix}-availability`]),
+      shopifyHandle: String(data[`${prefix}-shopify-handle`] || data[`${prefix}-handle`] || '').trim(),
+      productUrl: normalizeExternalUrl(data[`${prefix}-product-url`]),
+      imageUrl: normalizeExternalUrl(data[`${prefix}-image-url`]),
+      imageAlt: String(data[`${prefix}-image-alt`] || resolvedName).trim(),
+      grades: buildGrades(
+        data[`${prefix}-prima`],
+        data[`${prefix}-standard`],
+        String(data[`${prefix}-unit`] || data[`${prefix}-prima-unit`] || '').trim(),
+        String(data[`${prefix}-standard-unit`] || '').trim()
+      )
+    });
+  }
+
+  return {
+    marketLabel: String(data['week-label'] || data['week'] || '').trim(),
+    updatedAt: String(data['updated-at'] || data['last-updated'] || '').trim() || null,
+    validUntil: String(data['valid-until'] || '').trim() || null,
+    products
+  };
 }
 
 export function parseSheetCsv(csv, language = 'it') {
@@ -81,60 +260,14 @@ export function parseSheetCsv(csv, language = 'it') {
   const rows = parsed.data;
   if (!Array.isArray(rows) || rows.length < 2) throw new Error('CSV is empty or incomplete');
 
-  const col = languageColumn[language] ?? languageColumn.it;
-  const data = {};
-
-  rows.slice(1).forEach((row) => {
-    if (!Array.isArray(row)) return;
-    const key = String(row[0] ?? '').trim().toLowerCase();
-    if (!key) return;
-    const translated = String(row[col] ?? '').trim();
-    const fallback = String(row[languageColumn.it] ?? '').trim();
-    data[key] = translated || fallback;
-  });
-
-  const products = [];
-  for (let i = 1; i <= 50; i += 1) {
-    const prefix = `t${i}`;
-    const name = String(data[`${prefix}-nome`] || '').trim();
-    const activeRaw = String(data[`${prefix}-attivo`] || 'si').trim().toLowerCase();
-
-    if (!name && i > 8) break;
-    if (!name || !truthy.has(activeRaw)) continue;
-
-    const firstAmount = parsePrice(data[`${prefix}-prima`]);
-    const secondAmount = parsePrice(data[`${prefix}-standard`]);
-    const firstDetail = String(data[`${prefix}-unit`] || data[`${prefix}-prima-unit`] || '').trim();
-    const secondDetail = String(data[`${prefix}-standard-unit`] || '').trim();
-
-    const grades = [];
-    if (firstAmount !== null || data[`${prefix}-prima`]) {
-      grades.push({ id: 'first-choice', labelKey: 'product.first', detail: firstDetail, amount: firstAmount });
-    }
-    if (secondAmount !== null || data[`${prefix}-standard`]) {
-      grades.push({ id: 'second-choice', labelKey: 'product.second', detail: secondDetail, amount: secondAmount });
-    }
-    if (!grades.length) grades.push({ id: 'first-choice', labelKey: 'product.first', detail: firstDetail, amount: null });
-
-    products.push({
-      id: String(data[`${prefix}-id`] || slugify(data[`${prefix}-latin`] || name)),
-      name,
-      latin: String(data[`${prefix}-latin`] || '').trim(),
-      description: String(data[`${prefix}-desc`] || '').trim(),
-      origin: String(data[`${prefix}-origin`] || '').trim(),
-      badge: String(data[`${prefix}-badge`] || '').trim(),
-      availability: parseAvailability(data[`${prefix}-availability`]),
-      grades
-    });
-  }
+  const parsedSheet = looksLikeTabularSheet(rows)
+    ? parseTabularSheet(rows, language)
+    : parseLegacyKeyValueSheet(rows, language);
 
   return QuotationSchema.parse({
-    marketLabel: String(data['week-label'] || data['week'] || '').trim(),
-    updatedAt: String(data['updated-at'] || data['last-updated'] || '').trim() || null,
-    validUntil: String(data['valid-until'] || '').trim() || null,
+    ...parsedSheet,
     retrievedAt: new Date().toISOString(),
     currency: 'EUR',
-    products,
     source: 'sheet'
   });
 }
