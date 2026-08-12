@@ -33,3 +33,12 @@ jobs:
 
       - name: Critical browser journeys
         run: npx playwright test
+
+      - name: Upload V3 visual preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-visual-preview
+          path: artifacts/*.png
+          if-no-files-found: warn
+          retention-days: 7
