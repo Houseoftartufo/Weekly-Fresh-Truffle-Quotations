@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f6f0e7" />
+  <meta name="description" content="House of Tartufo weekly fresh truffle quotations: current prices, availability, origin, quality and professional shipping information." />
+  <meta property="og:title" content="House of Tartufo — Weekly Fresh Truffle Quotations" />
+  <meta property="og:description" content="Fresh truffle quotations updated weekly. Premium selection, professional thermal packaging and worldwide delivery." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://houseoftartufo.com" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <title>House of Tartufo — Weekly Fresh Truffle Quotations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#quotation">Skip directly to quotations</a>
+
+  <header class="site-header" data-header>
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="House of Tartufo — Home">
+        <span class="brand-mark" aria-hidden="true">H</span>
+        <span class="brand-copy">
+          <span class="brand-kicker">House of</span>
+          <span class="brand-name">Tartufo</span>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a href="#quotation" data-v3-i18n="nav.weekly">Weekly quotations</a>
+        <a href="https://houseoftartufo.com/search?q=truffle" target="_blank" rel="noopener noreferrer" data-v3-i18n="nav.truffles">Our truffles</a>
+        <a href="#services" data-v3-i18n="nav.shipping">Shipping</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="language-switcher" aria-label="Language">
+          <button type="button" class="lang-button is-active" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" class="lang-button" data-lang="fr" aria-pressed="false">FR</button>
+          <button type="button" class="lang-button" data-lang="nl" aria-pressed="false">NL</button>
+          <button type="button" class="lang-button" data-lang="it" aria-pressed="false">IT</button>
+        </div>
+        <a class="button button-small button-dark header-cta" href="#quotation" data-i18n="header.cta">View prices</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero hero-v3" aria-labelledby="hero-title">
+      <div class="container hero-v3-grid">
+        <div class="hero-copy">
+          <p class="eyebrow hero-eyebrow" data-i18n="hero.eyebrow">Fresh Truffle Market · House of Tartufo</p>
+          <h1 id="hero-title" data-i18n-html="hero.title">The right price.<br><em>This week.</em></h1>
+          <p class="hero-lead" data-i18n="hero.lead">Updated quotations for available fresh truffles, with clear quality, origin and shipping conditions.</p>
+
+          <div class="hero-actions">
+            <a class="button button-dark hero-primary" href="#quotation" data-i18n="hero.primary">Open quotation</a>
+            <a class="button button-ghost hero-secondary" href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" data-whatsapp-general data-i18n="hero.secondary">Talk to us</a>
+          </div>
+
+          <div class="hero-professional-note">
+            <span class="professional-line" aria-hidden="true"></span>
+            <span data-v3-i18n="hero.professionals">Built for chefs, restaurants, retailers and purchasing teams.</span>
+          </div>
+
+          <div class="freshness" role="status" aria-live="polite">
+            <span class="freshness-dot" aria-hidden="true"></span>
+            <span data-status-text data-i18n="status.loading">Loading the latest quotation…</span>
+          </div>
+        </div>
+
+        <div class="hero-visual" data-hero-visual hidden>
+          <button class="hero-product-button" type="button" data-hero-open aria-label="View featured truffle details">
+            <img class="hero-product-image" data-hero-image alt="" />
+            <span class="hero-visual-shade" aria-hidden="true"></span>
+            <span class="hero-inspect" data-v3-i18n="hero.inspect">View details</span>
+          </button>
+          <div class="hero-product-caption">
+            <span data-hero-name>—</span>
+            <em data-hero-latin></em>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="market-strip-section" aria-label="Current market information">
+      <div class="container market-strip">
+        <article class="market-cell market-cell-status">
+          <span data-v3-i18n="market.update">Market update</span>
+          <strong data-market-state>—</strong>
+          <small data-header-updated>—</small>
+        </article>
+        <article class="market-cell">
+          <span data-v3-i18n="market.origin">Origin</span>
+          <strong data-market-origin>—</strong>
+          <small data-market-product>—</small>
+        </article>
+        <article class="market-cell">
+          <span data-v3-i18n="market.availability">Availability</span>
+          <strong class="market-availability" data-market-availability>—</strong>
+          <small data-market-count>—</small>
+        </article>
+        <article class="market-cell">
+          <span data-v3-i18n="market.validity">Validity</span>
+          <strong data-validity>—</strong>
+          <small data-v3-i18n="market.livePrice">Live weekly quotation</small>
+        </article>
+        <article class="market-cell">
+          <span data-v3-i18n="market.currency">Currency</span>
+          <strong>EUR (€)</strong>
+          <small data-v3-i18n="market.perKg">Prices per kg</small>
+        </article>
+      </div>
+    </section>
+
+    <section id="quotation" class="quotation-section quotation-v3" aria-labelledby="quotation-title">
+      <div class="container">
+        <div class="section-heading quotation-heading-v3">
+          <div>
+            <p class="eyebrow" data-i18n="quotation.eyebrow">Current quotation</p>
+            <h2 id="quotation-title" data-i18n-html="quotation.title">Fresh truffles.<br><em>Prices without noise.</em></h2>
+          </div>
+          <div class="quotation-heading-actions">
+            <p data-v3-i18n="quotation.dynamic">The selection adapts automatically to what is available this week.</p>
+            <button class="text-button" type="button" data-copy-link data-i18n="quotation.copy">Copy quotation link</button>
+          </div>
+        </div>
+
+        <div class="notice notice-error" data-error hidden role="alert">
+          <strong data-i18n="error.title">Live data connection unavailable.</strong>
+          <span data-error-text data-i18n="error.fallback">We are showing the latest confirmed quotation available on this device.</span>
+        </div>
+
+        <div class="quote-grid" data-product-grid aria-live="polite" aria-busy="true">
+          <article class="product-card product-card-skeleton" aria-hidden="true"></article>
+          <article class="product-card product-card-skeleton" aria-hidden="true"></article>
+          <article class="product-card product-card-skeleton" aria-hidden="true"></article>
+        </div>
+
+        <div class="quote-footnote">
+          <p data-i18n="quotation.footnote">Availability is subject to confirmation when ordering. Dedicated conditions are available for recurring volumes.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="services" class="service-strip service-strip-v3" aria-label="House of Tartufo service">
+      <div class="container service-grid">
+        <article>
+          <span class="service-icon service-icon-quality" aria-hidden="true"></span>
+          <span class="service-number">01</span>
+          <h3 data-i18n="services.freshTitle">Fresh selection</h3>
+          <p data-i18n="services.freshText">Availability checked every week against the actual harvest.</p>
+        </article>
+        <article>
+          <span class="service-icon service-icon-shipping" aria-hidden="true"></span>
+          <span class="service-number">02</span>
+          <h3 data-i18n="services.shippingTitle">Professional shipping</h3>
+          <p data-i18n="services.shippingText">Thermal packaging and express carriers selected according to destination.</p>
+        </article>
+        <article>
+          <span class="service-icon service-icon-pro" aria-hidden="true"></span>
+          <span class="service-number">03</span>
+          <h3 data-i18n="services.partnerTitle">Built for professionals</h3>
+          <p data-i18n="services.partnerText">Restaurants, chefs, buyers and recurring partners can request dedicated quotations.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="final-cta final-cta-v3" aria-labelledby="cta-title">
+      <div class="container final-cta-grid">
+        <div class="final-cta-copy">
+          <p class="eyebrow" data-i18n="cta.eyebrow">This week</p>
+          <h2 id="cta-title" data-i18n-html="cta.title">Found the right product?<br><em>Secure availability.</em></h2>
+          <p data-i18n="cta.text">For professional orders, recurring volumes or specific requests, we can prepare dedicated conditions.</p>
+        </div>
+        <div class="final-cta-actions">
+          <a class="button button-dark" href="https://houseoftartufo.com" target="_blank" rel="noopener noreferrer" data-i18n="cta.site">Go to website</a>
+          <a class="button button-ghost" href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" data-whatsapp-general data-i18n="cta.whatsapp">Request on WhatsApp</a>
+        </div>
+        <div class="final-cta-visual" data-final-visual hidden>
+          <img data-final-image alt="" loading="lazy" decoding="async" />
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer site-footer-v3">
+    <div class="container footer-grid">
+      <div>
+        <span class="footer-brand">House of Tartufo</span>
+        <p data-i18n="footer.tagline">Italian truffles · Brussels, Belgium</p>
+      </div>
+      <nav aria-label="Contact">
+        <a href="https://houseoftartufo.com" target="_blank" rel="noopener noreferrer">houseoftartufo.com</a>
+        <a href="mailto:admin@houseoftartufo.com">admin@houseoftartufo.com</a>
+        <a href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      </nav>
+    </div>
+  </footer>
+
+  <div class="mobile-bar" aria-label="Quick actions">
+    <a href="https://wa.me/32480205715" target="_blank" rel="noopener noreferrer" data-whatsapp-general data-i18n="mobile.whatsapp">WhatsApp</a>
+    <a href="#quotation" data-i18n="mobile.prices">Prices</a>
+  </div>
+
+  <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
