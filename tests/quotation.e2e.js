@@ -117,3 +117,23 @@ test('mobile keeps high-priority actions visible', async ({ page }, testInfo) =>
   await expect(page.locator('.mobile-bar').getByRole('link', { name: 'WhatsApp' })).toBeVisible();
   await expect(page.locator('.mobile-bar').getByRole('link', { name: 'Prices' })).toBeVisible();
 });
+
+test('fullscreen explorer stays inside a short desktop viewport', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium-desktop', 'desktop-only viewport regression');
+  await page.setViewportSize({ width: 1760, height: 855 });
+  await page.goto('/?lang=it');
+  await page.locator('#quotation').getByRole('button', { name: 'Vedi dettagli — Summer Truffle' }).click();
+
+  const explorer = page.locator('.truffle-explorer');
+  const footer = explorer.locator('.explorer-footer');
+  await expect(explorer).toBeVisible();
+  await expect(footer).toBeVisible();
+
+  const explorerBox = await explorer.boundingBox();
+  const footerBox = await footer.boundingBox();
+  expect(explorerBox).not.toBeNull();
+  expect(footerBox).not.toBeNull();
+  expect(explorerBox.y).toBeGreaterThanOrEqual(0);
+  expect(explorerBox.y + explorerBox.height).toBeLessThanOrEqual(855);
+  expect(footerBox.y + footerBox.height).toBeLessThanOrEqual(855);
+});

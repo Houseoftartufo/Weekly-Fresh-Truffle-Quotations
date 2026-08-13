@@ -2,8 +2,26 @@
    Loaded after product-images.css so these rules intentionally refine the base component. */
 
 .truffle-explorer {
+  position: fixed;
+  inset: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
   background: #090806;
   color: #fffaf0;
+  overscroll-behavior: none;
+}
+
+.truffle-explorer,
+.truffle-explorer *,
+.truffle-explorer *::before,
+.truffle-explorer *::after {
+  box-sizing: border-box;
 }
 
 .truffle-explorer::backdrop {
@@ -15,7 +33,9 @@
   position: relative;
   width: 100%;
   max-width: none;
-  height: 100dvh;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
   margin: 0;
   display: grid;
   grid-template-rows: 78px minmax(0, 1fr) 58px;
@@ -91,7 +111,10 @@
 
 .truffle-explorer .explorer-body {
   position: relative;
+  min-width: 0;
   min-height: 0;
+  height: 100%;
+  max-height: 100%;
   display: grid;
   grid-template-columns: minmax(300px, 28vw) minmax(0, 1fr);
   overflow: hidden;
@@ -101,6 +124,10 @@
   position: relative;
   z-index: 8;
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
   padding: clamp(38px, 5.6vw, 92px) clamp(32px, 4.6vw, 76px);
   display: flex;
   flex-direction: column;
@@ -226,6 +253,8 @@
   position: relative;
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  max-height: 100%;
   overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 116px;
@@ -236,6 +265,8 @@
   position: relative;
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  max-height: 100%;
   overflow: hidden;
   display: grid;
   place-items: center;
@@ -290,11 +321,14 @@
   position: relative;
   z-index: 14;
   min-width: 0;
+  min-height: 0;
+  max-height: 100%;
   padding: 26px 18px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 12px;
+  overflow-y: auto;
   border-left: 1px solid rgba(255, 255, 255, .09);
   background: rgba(8, 7, 5, .88);
   backdrop-filter: blur(16px);
@@ -564,6 +598,7 @@
     justify-content: flex-start;
     gap: 7px;
     overflow-x: auto;
+    overflow-y: hidden;
     transform: translateX(-50%);
     border: 1px solid rgba(255, 255, 255, .14);
     border-radius: 10px;
@@ -601,6 +636,38 @@
   }
 }
 
+@media (max-height: 900px) and (min-width: 761px) {
+  .truffle-explorer .explorer-panel {
+    padding-top: clamp(24px, 3.6vh, 34px);
+    padding-bottom: clamp(24px, 3.6vh, 34px);
+  }
+
+  .truffle-explorer .explorer-eyebrow {
+    margin-bottom: 16px;
+  }
+
+  .truffle-explorer .explorer-title {
+    font-size: clamp(44px, 4.6vw, 72px);
+  }
+
+  .explorer-specs {
+    margin-top: clamp(20px, 3vh, 28px);
+  }
+
+  .truffle-explorer .explorer-price {
+    margin-top: clamp(20px, 3vh, 28px);
+    font-size: clamp(64px, 6vw, 90px);
+  }
+
+  .truffle-explorer .explorer-availability {
+    margin-top: 16px;
+  }
+
+  .truffle-explorer .explorer-reserve {
+    margin-top: 18px;
+  }
+}
+
 @media (max-height: 720px) and (min-width: 761px) {
   .truffle-explorer .explorer-panel {
     padding-top: 28px;
@@ -626,13 +693,5 @@
 
   .truffle-explorer .explorer-reserve {
     margin-top: 20px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .truffle-explorer .explorer-image,
-  .explorer-thumb,
-  .truffle-explorer .explorer-reserve {
-    transition: none;
   }
 }
