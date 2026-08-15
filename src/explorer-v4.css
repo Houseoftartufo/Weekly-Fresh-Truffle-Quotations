@@ -1,0 +1,305 @@
+/* Explorer V4 — surgical polish over the approved V3 layout. */
+
+.truffle-explorer .explorer-shell {
+  grid-template-rows: 70px minmax(0, 1fr) 42px;
+}
+
+.truffle-explorer .explorer-topbar {
+  min-height: 70px;
+  padding-inline: clamp(22px, 4vw, 66px);
+}
+
+.truffle-explorer .explorer-counter {
+  display: none;
+}
+
+.truffle-explorer .explorer-brand {
+  width: clamp(174px, 13vw, 224px);
+  gap: 0;
+  line-height: 0;
+}
+
+.truffle-explorer .explorer-brand-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.truffle-explorer .explorer-brand-mark {
+  display: none;
+}
+
+.truffle-explorer .explorer-body {
+  grid-template-columns: minmax(315px, 28.5vw) minmax(0, 1fr);
+}
+
+.truffle-explorer .explorer-panel {
+  padding: clamp(34px, 4.7vw, 74px) clamp(32px, 4.2vw, 66px);
+  background:
+    linear-gradient(90deg, rgba(7, 6, 5, .995) 0%, rgba(7, 6, 5, .975) 74%, rgba(7, 6, 5, .76) 92%, rgba(7, 6, 5, 0) 100%);
+}
+
+.truffle-explorer .explorer-eyebrow {
+  margin-bottom: 20px;
+  color: rgba(255, 250, 240, .72);
+  font-size: 12px;
+  letter-spacing: .12em;
+}
+
+.truffle-explorer .explorer-title {
+  font-size: clamp(50px, 4.7vw, 80px);
+  line-height: .88;
+  letter-spacing: -.048em;
+}
+
+.truffle-explorer .explorer-latin {
+  margin-top: 13px;
+  color: rgba(233, 223, 206, .88);
+}
+
+.truffle-explorer .explorer-specs {
+  margin-top: clamp(26px, 4vh, 42px);
+  gap: 13px;
+}
+
+.truffle-explorer .explorer-spec[hidden] {
+  display: none !important;
+}
+
+.truffle-explorer .explorer-spec-label {
+  color: #cfaa67;
+}
+
+.truffle-explorer .explorer-spec-value {
+  color: rgba(255, 255, 255, .86);
+}
+
+.truffle-explorer .explorer-price {
+  margin-top: clamp(26px, 4vh, 42px);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(62px, 6.1vw, 96px);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+  line-height: .82;
+  letter-spacing: -.055em;
+}
+
+.truffle-explorer .explorer-price small {
+  margin-left: 10px;
+  font-family: var(--sans);
+  font-size: .19em;
+  font-weight: 650;
+  letter-spacing: .04em;
+}
+
+.truffle-explorer .explorer-availability {
+  margin-top: 18px;
+  font-size: 10px;
+  letter-spacing: .1em;
+}
+
+.truffle-explorer .explorer-reserve {
+  min-width: 228px;
+  margin-top: 22px;
+  padding: 15px 22px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #d5b06b, #bd914e);
+  box-shadow: 0 14px 36px rgba(181, 141, 74, .12);
+  transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.truffle-explorer .explorer-reserve:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px rgba(181, 141, 74, .18);
+}
+
+.truffle-explorer .explorer-visual {
+  grid-template-columns: minmax(0, 1fr) 96px;
+}
+
+.truffle-explorer .explorer-stage {
+  background: #0a0907;
+}
+
+.truffle-explorer .explorer-stage::before {
+  background:
+    linear-gradient(90deg, rgba(8, 7, 5, .38), transparent 12%, transparent 86%, rgba(8, 7, 5, .2)),
+    linear-gradient(180deg, rgba(8, 7, 5, .08), transparent 14%, transparent 86%, rgba(8, 7, 5, .12));
+}
+
+.truffle-explorer .explorer-image {
+  object-position: center 60%;
+  filter: saturate(.96) contrast(1.025);
+}
+
+.truffle-explorer .explorer-gallery {
+  padding: 22px 11px;
+  gap: 10px;
+}
+
+.truffle-explorer .explorer-thumb {
+  width: 70px;
+  height: 78px;
+  border-radius: 7px;
+}
+
+.truffle-explorer .explorer-zoom-controls {
+  right: 20px;
+  bottom: 18px;
+  border-color: rgba(255, 255, 255, .3);
+  background: rgba(10, 9, 7, .68);
+}
+
+.truffle-explorer .explorer-interaction-hint {
+  position: absolute;
+  left: 22px;
+  bottom: 19px;
+  z-index: 16;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, .24);
+  border-radius: 999px;
+  background: rgba(10, 9, 7, .56);
+  color: rgba(255, 255, 255, .84);
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+  opacity: .88;
+  transform: translateY(0);
+  transition: opacity .28s ease, transform .28s ease;
+}
+
+.truffle-explorer .explorer-interaction-hint::before {
+  content: "↔";
+  color: #d5b06b;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.truffle-explorer .explorer-stage.has-interacted .explorer-interaction-hint {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.truffle-explorer .explorer-footer {
+  min-height: 42px;
+  padding: 0 clamp(22px, 4vw, 66px);
+  justify-content: flex-end;
+  font-size: 10px;
+}
+
+.truffle-explorer .explorer-footer-meta {
+  display: none;
+}
+
+.truffle-explorer .explorer-footer-status {
+  gap: 8px;
+  color: rgba(255, 255, 255, .58);
+  font-weight: 700;
+  letter-spacing: .11em;
+}
+
+.truffle-explorer .explorer-footer-status::before {
+  width: 6px;
+  height: 6px;
+  background: #c9a35e !important;
+  box-shadow: 0 0 14px rgba(201, 163, 94, .24);
+}
+
+.truffle-explorer[open] .explorer-panel {
+  animation: explorer-panel-in .48s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.truffle-explorer[open] .explorer-image {
+  animation: explorer-image-in .52s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+@keyframes explorer-panel-in {
+  from { opacity: 0; transform: translateX(-18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes explorer-image-in {
+  from { opacity: .72; filter: saturate(.9) contrast(1.01); }
+  to { opacity: 1; filter: saturate(.96) contrast(1.025); }
+}
+
+@media (max-width: 1100px) {
+  .truffle-explorer .explorer-body {
+    grid-template-columns: minmax(290px, 34vw) minmax(0, 1fr);
+  }
+
+  .truffle-explorer .explorer-visual {
+    grid-template-columns: minmax(0, 1fr) 86px;
+  }
+
+  .truffle-explorer .explorer-thumb {
+    width: 62px;
+    height: 70px;
+  }
+}
+
+@media (max-width: 760px) {
+  .truffle-explorer .explorer-shell {
+    grid-template-rows: 60px minmax(0, 1fr);
+  }
+
+  .truffle-explorer .explorer-topbar {
+    min-height: 60px;
+  }
+
+  .truffle-explorer .explorer-brand {
+    width: 154px;
+  }
+
+  .truffle-explorer .explorer-panel {
+    padding: 20px 20px 30px;
+  }
+
+  .truffle-explorer .explorer-price {
+    font-size: 58px;
+  }
+
+  .truffle-explorer .explorer-interaction-hint {
+    left: 12px;
+    bottom: 12px;
+    min-height: 30px;
+    padding-inline: 10px;
+    font-size: 8px;
+  }
+
+  .truffle-explorer .explorer-gallery {
+    padding: 6px;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  .truffle-explorer .explorer-panel {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .truffle-explorer .explorer-title {
+    font-size: clamp(42px, 4.3vw, 64px);
+  }
+
+  .truffle-explorer .explorer-specs,
+  .truffle-explorer .explorer-price {
+    margin-top: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .truffle-explorer[open] .explorer-panel,
+  .truffle-explorer[open] .explorer-image {
+    animation: none;
+  }
+}
