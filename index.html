@@ -15,18 +15,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/src/styles.css" />
+  <link rel="stylesheet" href="/src/brand.css" />
 </head>
 <body>
   <a class="skip-link" href="#quotation">Skip directly to quotations</a>
 
   <header class="site-header" data-header>
     <div class="container header-inner">
-      <a class="brand" href="#top" aria-label="House of Tartufo — Home">
-        <span class="brand-mark" aria-hidden="true">H</span>
-        <span class="brand-copy">
-          <span class="brand-kicker">House of</span>
-          <span class="brand-name">Tartufo</span>
-        </span>
+      <a class="brand brand-official" href="#top" aria-label="House of Tartufo — Home">
+        <img class="brand-logo" src="/assets/house-of-tartufo-logo-official.png" alt="House of Tartufo" width="1126" height="334" />
       </a>
 
       <nav class="main-nav" aria-label="Primary navigation">
@@ -188,8 +185,10 @@
 
   <footer class="site-footer site-footer-v3">
     <div class="container footer-grid">
-      <div>
-        <span class="footer-brand">House of Tartufo</span>
+      <div class="footer-brand-block">
+        <a class="footer-brand-logo-link" href="#top" aria-label="House of Tartufo — Back to top">
+          <img class="footer-brand-logo" src="/assets/house-of-tartufo-logo-official.png" alt="House of Tartufo" width="1126" height="334" loading="lazy" decoding="async" />
+        </a>
         <p data-i18n="footer.tagline">Italian truffles · Brussels, Belgium</p>
       </div>
       <nav aria-label="Contact">
