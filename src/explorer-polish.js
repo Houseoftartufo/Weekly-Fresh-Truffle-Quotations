@@ -25,10 +25,10 @@ function installBrand(explorer) {
 
   const image = document.createElement('img');
   image.className = 'explorer-brand-logo';
-  image.src = '/assets/house-of-tartufo-logo-white-v2.svg';
+  image.src = '/assets/house-of-tartufo-logo-white.png';
   image.alt = 'House of Tartufo';
-  image.width = 943;
-  image.height = 265;
+  image.width = 1034;
+  image.height = 270;
   image.decoding = 'async';
   brand.replaceChildren(image);
 }
